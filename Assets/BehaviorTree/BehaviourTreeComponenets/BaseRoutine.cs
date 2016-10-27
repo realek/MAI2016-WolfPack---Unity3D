@@ -1,0 +1,42 @@
+﻿using UnityEngine;
+using System.Collections;
+
+public enum RoutineState
+{
+    None,
+    Running,
+    Succeded,
+    Failed
+}
+
+public abstract class BaseRoutine {
+
+    protected RoutineState m_state;
+    public RoutineState State
+    {
+        get
+        {
+            return m_state;
+        }
+    }
+
+    public abstract void Tick();
+    public virtual void Start()
+    {
+        m_state = RoutineState.Running;
+    }
+    public abstract void Reset();
+    protected void Succed()
+    {
+        m_state = RoutineState.Succeded;
+    }
+    protected void Fail()
+    {
+        m_state = RoutineState.Failed;
+    }
+    public bool IsRunning()
+    {
+        return m_state == RoutineState.Running ? true : false;
+    }
+
+}
