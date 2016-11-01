@@ -11,7 +11,7 @@ public enum RoutineState
 
 public abstract class BaseRoutine {
 
-    protected RoutineState m_state;
+    protected RoutineState m_state = RoutineState.None;
     public RoutineState State
     {
         get

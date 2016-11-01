@@ -2,11 +2,11 @@
 using System.Collections;
 using System;
 
-public class RunnableSequence : BaseRoutine
+public class RunnableSelector : BaseRoutine
 {
     private BaseRoutine[] m_storedRoutines;
     int id;
-    public RunnableSequence(params BaseRoutine[] routines)
+    public RunnableSelector(params BaseRoutine[] routines)
     {
         m_storedRoutines = routines;
     }
@@ -33,25 +33,25 @@ public class RunnableSequence : BaseRoutine
             if (m_storedRoutines[id].IsRunning())
                 return;
 
-            if (id==0 && m_storedRoutines[id].State == RoutineState.None)
+            if (id == 0 && m_storedRoutines[id].State == RoutineState.None)
                 m_storedRoutines[id].Start();
 
             m_storedRoutines[id].Tick();
 
             if (m_storedRoutines[id].State == RoutineState.Succeded)
             {
-                id++;
-                if (id == m_storedRoutines.Length)
-                {
-                    Succed();
-                    return;
-                }
-                m_storedRoutines[id].Start();
+                Succed();
+                return;
             }
             else
             {
-                Fail();
-                return;
+                id++;
+                if (id == m_storedRoutines.Length)
+                {
+                    Fail();
+                    return;
+                }
+                m_storedRoutines[id].Start();
             }
         }
     }
