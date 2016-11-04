@@ -1,8 +1,4 @@
-﻿using UnityEngine;
-using System.Collections;
-using System;
-
-public class RunnableSequence : BaseRoutine
+﻿public class RunnableSequence : BaseRoutine
 {
     private BaseRoutine[] m_storedRoutines;
     int id;
@@ -11,12 +7,18 @@ public class RunnableSequence : BaseRoutine
         m_storedRoutines = routines;
     }
 
+    /// <summary>
+    /// Used to start the sequence, sets the increment to 0
+    /// </summary>
     public override void Start()
     {
         base.Start();
         id = 0;
     }
 
+    /// <summary>
+    /// Used to reset the sequence and all its stored routines, calls start
+    /// </summary>
     public override void Reset()
     {
         for (int i = 0; i < m_storedRoutines.Length; i++)
@@ -26,6 +28,9 @@ public class RunnableSequence : BaseRoutine
         Start();
     }
 
+    /// <summary>
+    /// Used to tick the sequence, and its current routine. Returns if the routine is still running
+    /// </summary>
     public override void Tick()
     {
         if (IsRunning())
@@ -38,6 +43,7 @@ public class RunnableSequence : BaseRoutine
 
             m_storedRoutines[id].Tick();
 
+            //continue if success
             if (m_storedRoutines[id].State == RoutineState.Succeded)
             {
                 id++;
@@ -48,7 +54,7 @@ public class RunnableSequence : BaseRoutine
                 }
                 m_storedRoutines[id].Start();
             }
-            else
+            else //fail if failed
             {
                 Fail();
                 return;

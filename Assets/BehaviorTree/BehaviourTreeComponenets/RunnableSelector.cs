@@ -1,8 +1,4 @@
-﻿using UnityEngine;
-using System.Collections;
-using System;
-
-public class RunnableSelector : BaseRoutine
+﻿public class RunnableSelector : BaseRoutine
 {
     private BaseRoutine[] m_storedRoutines;
     int id;
@@ -11,12 +7,18 @@ public class RunnableSelector : BaseRoutine
         m_storedRoutines = routines;
     }
 
+    /// <summary>
+    /// Starts the selector and resets the incrementor to 0.
+    /// </summary>
     public override void Start()
     {
         base.Start();
         id = 0;
     }
 
+    /// <summary>
+    /// Resets the selector and its stored routines also calls start.
+    /// </summary>
     public override void Reset()
     {
         for (int i = 0; i < m_storedRoutines.Length; i++)
@@ -26,6 +28,9 @@ public class RunnableSelector : BaseRoutine
         Start();
     }
 
+    /// <summary>
+    /// Ticks the selector and its current routine, if the routine succedes, the selector succedes.
+    /// </summary>
     public override void Tick()
     {
         if (IsRunning())
@@ -43,7 +48,7 @@ public class RunnableSelector : BaseRoutine
                 Succed();
                 return;
             }
-            else
+            else //routine didnt succed continue to the next, or retrieve state if its the last one
             {
                 id++;
                 if (id == m_storedRoutines.Length)

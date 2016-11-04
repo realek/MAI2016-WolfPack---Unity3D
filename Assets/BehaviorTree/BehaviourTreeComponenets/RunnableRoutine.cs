@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System;
 using UnityEngine.Events;
 
@@ -11,6 +10,9 @@ public enum ActionState
     Failed
 }
 
+/// <summary>
+/// Routine class, can load up an action and query for its result. Recomend using coroutines
+/// </summary>
 [System.Serializable]
 public class RunnableRoutine : BaseRoutine
 {
@@ -34,17 +36,26 @@ public class RunnableRoutine : BaseRoutine
         m_routineAction.AddListener(() => m_actionState = action.Invoke());
     }
 
+    /// <summary>
+    /// Start function for the routine called to start it.
+    /// </summary>
     public override void Start()
     {
         base.Start();
         m_actionState = ActionState.Stopped;
     }
 
+    /// <summary>
+    /// Reset function for the routine called to reset the routine after it completes
+    /// </summary>
     public override void Reset()
     {
         Start();
     }
 
+    /// <summary>
+    /// Used to tick the routine in order to get its action result.
+    /// </summary>
     public override void Tick()
     {
         if (m_actionState==ActionState.Running)

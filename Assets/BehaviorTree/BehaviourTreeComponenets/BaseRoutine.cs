@@ -1,6 +1,7 @@
-﻿using UnityEngine;
-using System.Collections;
-
+﻿
+/// <summary>
+/// Enum containing all routine runtime states
+/// </summary>
 public enum RoutineState
 {
     None,
@@ -9,6 +10,9 @@ public enum RoutineState
     Failed
 }
 
+/// <summary>
+/// Base routine class, used to create routines
+/// </summary>
 public abstract class BaseRoutine {
 
     protected RoutineState m_state = RoutineState.None;
