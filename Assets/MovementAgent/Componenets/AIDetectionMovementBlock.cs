@@ -13,15 +13,15 @@ internal enum MovementType
 
 
 [RequireComponent(typeof(Rigidbody),typeof(NavMeshAgent))]
-public class AIAgent : MonoBehaviour {
+public class AIDetectionMovementBlock : MonoBehaviour {
 
     //Sensor Variables
     [SerializeField]
     private LayerMask m_detectionLayer;
     [SerializeField]
     private float m_detectionAreaRadius;
-    [SerializeField,Range(0.1f,0.25f), Tooltip("How much of the detection area is representated by the avoidance area, the area is used in order to avoid other agents while moving.")]
-    private float m_avoidanceAreaPercentage = 0.1f;
+    [SerializeField,Range(0.1f,0.25f), Tooltip("How much of the detection area is representated by the obstruction area, the area is used in order to find out if the agents movement is obstructed")]
+    private float m_obstructionAreaPercentage = 0.1f;
     [SerializeField, Range(0.2f, 0.9f), Tooltip("How much of the detection area is represented by the hearing range.")]
     private float m_hearingAreaPercentage = 0.2f;
     [SerializeField, Range(0, 1.0f), Tooltip("How far into the detection area can the agent see.")]
@@ -31,7 +31,7 @@ public class AIAgent : MonoBehaviour {
     [SerializeField]
     private List<Collider> m_detectedEntities;
     private float m_cDARadius;
-    private float m_cAARadius;
+    private float m_cOARadius;
     private float m_cHARadius;
     private float m_cSRange;
     private WaitForSeconds m_sensorTick;
@@ -39,12 +39,16 @@ public class AIAgent : MonoBehaviour {
 
     //Movement Variables
     private MovementType m_moveType;
+    private ActionState m_moveState;
     private NavMeshAgent m_navAgent;
     private WaitForSeconds m_movementUpdateTick;
     private GameObject m_followTarget;
     private Vector3 m_worldDestination;
 
     // Accesors
+    /// <summary>
+    /// Currently followed target.
+    /// </summary>
     public GameObject CurrentFollowTarget
     {
         get
@@ -52,6 +56,10 @@ public class AIAgent : MonoBehaviour {
             return m_followTarget;
         }
     }
+
+    /// <summary>
+    /// Current world destination.
+    /// </summary>
     public Vector3 CurrentWorldDestination
     {
         get
@@ -60,6 +68,13 @@ public class AIAgent : MonoBehaviour {
         }
     }
 
+    public List<Collider> DetectedGameObjects
+    {
+        get
+        {
+            return m_detectedEntities;
+        }
+    }
     //Constant Variables
     private const float PATH_UPDATE_RATE = 0.5f;
     private const float PATH_DEST_DIFF = 0.5f;
@@ -87,7 +102,7 @@ public class AIAgent : MonoBehaviour {
         Collider agentCol = GetComponent<Collider>();
         m_agentSurf = (agentCol.bounds.extents.z + agentCol.bounds.extents.x) / 2;
         m_cDARadius = m_detectionAreaRadius + m_agentSurf;
-        m_cAARadius = m_cDARadius * m_avoidanceAreaPercentage;
+        m_cOARadius = m_cDARadius * m_obstructionAreaPercentage;
         m_cHARadius = m_cDARadius * m_hearingAreaPercentage;
         m_cSRange = m_cDARadius * m_sightRange;
         m_detectedEntities = new List<Collider>();
@@ -115,6 +130,9 @@ public class AIAgent : MonoBehaviour {
         m_followTarget = null;
     }
 
+    /// <summary>
+    /// Call this method will start the agent.
+    /// </summary>
     public void StartUpAgent()
     {
         m_detectedEntities = new List<Collider>();
@@ -127,6 +145,7 @@ public class AIAgent : MonoBehaviour {
     {
         m_navAgent.stoppingDistance = distance;
     }
+
 
     private bool EntityAtDestination(ref List<Collider> entities)
     {
@@ -142,7 +161,7 @@ public class AIAgent : MonoBehaviour {
                     continue;
                 }
                 Vector3 closestPoint = entities[i].ClosestPointOnBounds(transform.position);
-                if (PointInsideSphere(closestPoint, transform.position, m_cAARadius))
+                if (PointInsideSphere(closestPoint, transform.position, m_cOARadius))
                 {
                    
                     float entitySurf = (entities[i].bounds.extents.z + entities[i].bounds.extents.x)/2;
@@ -161,6 +180,11 @@ public class AIAgent : MonoBehaviour {
 
     }
 
+    /// <summary>
+    /// LOS method returns true if gameobject is in LOS.
+    /// </summary>
+    /// <param name="entity"></param>
+    /// <returns></returns>
     private bool Sight(Transform entity)
     {
         Vector3 dir = entity.position - transform.position;
@@ -181,6 +205,7 @@ public class AIAgent : MonoBehaviour {
         }
         return false;
     }
+
     /// <summary>
     /// Helper function for checking if a point is inside a sphere.
     /// </summary>
@@ -290,7 +315,7 @@ public class AIAgent : MonoBehaviour {
                        Debug.Log("Compute Pos");
 
                     }
-
+                    m_worldDestination = cTargetPosition;
                     if (Vector3.Distance(oldTargetPosition,cTargetPosition) > PATH_DEST_DIFF)
                     {
                         m_navAgent.CalculatePath(cTargetPosition, currentPath);
@@ -343,6 +368,7 @@ public class AIAgent : MonoBehaviour {
 
        
         yield return m_movementUpdateTick;
+
         goto MovementLoop;
     }
     
@@ -380,12 +406,15 @@ public class AIAgent : MonoBehaviour {
         Gizmos.color = new Color(0.25f, 1, 0, 0.25f);
         Gizmos.DrawSphere(transform.position, (m_detectionAreaRadius + m_agentSurf) * m_hearingAreaPercentage);
         Gizmos.color = new Color(0, 0.5f, 0.75f, 0.25f);
-        Gizmos.DrawSphere(transform.position, (m_detectionAreaRadius + m_agentSurf) * m_avoidanceAreaPercentage);
+        Gizmos.DrawSphere(transform.position, (m_detectionAreaRadius + m_agentSurf) * m_obstructionAreaPercentage);
         Gizmos.color = new Color(1,1,1,0.75f);
         Vector3 sightFalloff = transform.position;
         sightFalloff.z += (m_detectionAreaRadius + m_agentSurf) * m_sightRange;
         sightFalloff = transform.position + (transform.rotation * (sightFalloff - transform.position));
         Gizmos.DrawLine(transform.position,sightFalloff);
+
+        if (m_navAgent.path != null)
+            NavMeshPathDisplay.DisplayPath(m_navAgent.path, new Color(1, 0, 0, 1));
 
     }
 

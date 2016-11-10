@@ -1,14 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-[RequireComponent(typeof(AIAgent))]
+[RequireComponent(typeof(AIDetectionMovementBlock))]
 public class AIBehaviour : MonoBehaviour {
 
-    private AIAgent m_agent;
+    private AIDetectionMovementBlock m_agent;
 	// Use this for initialization
 	void Start ()
     {
-        m_agent = GetComponent<AIAgent>();
+        m_agent = GetComponent<AIDetectionMovementBlock>();
         if (m_agent == null || !m_agent.enabled)
         {
             Debug.LogError("AI agent is missing or disabled,", gameObject);
