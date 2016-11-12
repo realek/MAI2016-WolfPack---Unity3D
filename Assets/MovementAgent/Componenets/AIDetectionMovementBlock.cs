@@ -37,6 +37,7 @@ public class AIDetectionMovementBlock : MonoBehaviour {
 
     //Movement Variables
     private MovementType m_moveType;
+    [SerializeField]
     private ActionState m_moveState;
     private NavMeshAgent m_navAgent;
     private WaitForSeconds m_movementUpdateTick;
@@ -55,6 +56,16 @@ public class AIDetectionMovementBlock : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Current action block state
+    /// </summary>
+    public ActionState BlockState
+    {
+        get
+        {
+            return m_moveState;
+        }
+    }
     /// <summary>
     /// Current world destination.
     /// </summary>
@@ -135,6 +146,8 @@ public class AIDetectionMovementBlock : MonoBehaviour {
     {
         m_detectedEntities = new List<Collider>();
         m_moveType = MovementType.None;
+        m_moveState = ActionState.Stopped;
+        m_followTarget = null;
         StartCoroutine(Detection());
         StartCoroutine(Movement());
     }
@@ -284,16 +297,16 @@ public class AIDetectionMovementBlock : MonoBehaviour {
         {
             case MovementType.Destination:
                 {
-                    if(cTargetPosition != m_worldDestination)
+                    if (cTargetPosition != m_worldDestination)
                     {
                         cTargetPosition = m_worldDestination;
-                        m_navAgent.CalculatePath(cTargetPosition,currentPath);
+                        m_navAgent.CalculatePath(cTargetPosition, currentPath);
                     }
                     break;
                 }
             case MovementType.Follow:
                 {
-                    if (gameObjCol == null && !colCheck || gameObjCol!=null &&
+                    if (gameObjCol == null && !colCheck || gameObjCol != null &&
                         gameObjCol.gameObject.GetInstanceID() != m_followTarget.GetInstanceID())
                     {
                         colCheck = true;
@@ -302,7 +315,7 @@ public class AIDetectionMovementBlock : MonoBehaviour {
 
                     if (!cFollowTargetPos.Equals(m_followTarget.transform.position))
                     {
-                        if(gameObjCol != null)
+                        if (gameObjCol != null)
                         {
                             cTargetPosition = gameObjCol.ClosestPointOnBounds(transform.position);
                         }
@@ -310,11 +323,10 @@ public class AIDetectionMovementBlock : MonoBehaviour {
                         {
                             cTargetPosition = m_followTarget.transform.position;
                         }
-                       Debug.Log("Compute Pos");
 
                     }
                     m_worldDestination = cTargetPosition;
-                    if (Vector3.Distance(oldTargetPosition,cTargetPosition) > PATH_DEST_DIFF)
+                    if (Vector3.Distance(oldTargetPosition, cTargetPosition) > PATH_DEST_DIFF)
                     {
                         m_navAgent.CalculatePath(cTargetPosition, currentPath);
                     }
@@ -325,13 +337,19 @@ public class AIDetectionMovementBlock : MonoBehaviour {
                 }
         }
 
-        if(currentPath.status == NavMeshPathStatus.PathComplete)
+        if (currentPath.status == NavMeshPathStatus.PathPartial)
         {
-            if(currentPath != m_navAgent.path)
+            m_moveState = ActionState.Failed;
+        }
+        else if (currentPath.status == NavMeshPathStatus.PathComplete)
+        {
+            if (currentPath != m_navAgent.path)
             {
                 m_navAgent.SetPath(currentPath);
             }
+            m_moveState = ActionState.Running;
         }
+
 
         if(m_navAgent.path !=null)
         {
@@ -339,9 +357,11 @@ public class AIDetectionMovementBlock : MonoBehaviour {
             {
                 case MovementType.Destination:
                     {
-                        if (m_navAgent.remainingDistance < m_navAgent.stoppingDistance && m_navAgent.path.corners.Length > 1 || EntityAtDestination(ref m_detectedEntities))
+                        if (m_navAgent.remainingDistance < m_navAgent.stoppingDistance && m_navAgent.path.corners.Length >= 1 || EntityAtDestination(ref m_detectedEntities))
                         {
                             m_navAgent.ResetPath();
+                            currentPath = new NavMeshPath();
+                            m_moveState = ActionState.Completed;
                         }
                             break;
                     }
@@ -352,10 +372,12 @@ public class AIDetectionMovementBlock : MonoBehaviour {
                             m_navAgent.ResetPath();
                             currentPath = m_navAgent.path;
                             m_navAgent.Stop();
+                            m_moveState = ActionState.Completed;
                         }
                         else if (m_navAgent.remainingDistance > m_navAgent.stoppingDistance && cPos == transform.position)
                         {
                             m_navAgent.Resume();
+                            m_moveState = ActionState.Running;
                         }
                         cPos = transform.position;
                         break;
@@ -411,7 +433,7 @@ public class AIDetectionMovementBlock : MonoBehaviour {
         sightFalloff = transform.position + (transform.rotation * (sightFalloff - transform.position));
         Gizmos.DrawLine(transform.position,sightFalloff);
 
-        if (m_navAgent.path != null)
+        if (m_navAgent != null && m_navAgent.path !=null)
             NavMeshPathDisplay.DisplayPath(m_navAgent.path, new Color(1, 0, 0, 1));
 
     }
@@ -424,7 +446,7 @@ public class AIDetectionMovementBlock : MonoBehaviour {
           //  Debug.Log("FIRED");
 
    
-            Follow(TESTTARGET);
+            Move(TESTTARGET.transform.position);
             
         }
 
