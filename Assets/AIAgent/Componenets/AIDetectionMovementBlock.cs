@@ -37,8 +37,6 @@ public class AIDetectionMovementBlock : MonoBehaviour {
 
     //Movement Variables
     private MovementType m_moveType;
-    [SerializeField]
-    private ActionState m_moveState;
     private NavMeshAgent m_navAgent;
     private WaitForSeconds m_movementUpdateTick;
     private GameObject m_followTarget;
@@ -56,16 +54,6 @@ public class AIDetectionMovementBlock : MonoBehaviour {
         }
     }
 
-    /// <summary>
-    /// Current action block state
-    /// </summary>
-    public ActionState BlockState
-    {
-        get
-        {
-            return m_moveState;
-        }
-    }
     /// <summary>
     /// Current world destination.
     /// </summary>
@@ -146,7 +134,6 @@ public class AIDetectionMovementBlock : MonoBehaviour {
     {
         m_detectedEntities = new List<Collider>();
         m_moveType = MovementType.None;
-        m_moveState = ActionState.Stopped;
         m_followTarget = null;
         StartCoroutine(Detection());
         StartCoroutine(Movement());
@@ -337,17 +324,12 @@ public class AIDetectionMovementBlock : MonoBehaviour {
                 }
         }
 
-        if (currentPath.status == NavMeshPathStatus.PathPartial)
-        {
-            m_moveState = ActionState.Failed;
-        }
-        else if (currentPath.status == NavMeshPathStatus.PathComplete)
+        if (currentPath.status == NavMeshPathStatus.PathComplete)
         {
             if (currentPath != m_navAgent.path)
             {
                 m_navAgent.SetPath(currentPath);
             }
-            m_moveState = ActionState.Running;
         }
 
 
@@ -361,7 +343,6 @@ public class AIDetectionMovementBlock : MonoBehaviour {
                         {
                             m_navAgent.ResetPath();
                             currentPath = new NavMeshPath();
-                            m_moveState = ActionState.Completed;
                         }
                             break;
                     }

@@ -29,7 +29,7 @@ public class AIMovementModule : AIModule
     [Tooltip("How much of the detection area is representated by the obstruction area, the area is used in order to find out if the agents movement is obstructed")]
     public float ObstructionAreaRange = 0.5f;
     [SerializeField,Tooltip("The module suspends operation once it is inactive for a certain period of time, in seconds.")]
-    private float m_inactivityTime;
+    private float m_inactivityTime = 10.0f;
     private bool m_isInactive;
     private GameObject m_target;
     protected override void InitializeModule(MonoBehaviour owner)
@@ -76,7 +76,6 @@ public class AIMovementModule : AIModule
         Collider gameObjCol = null;
         Vector3 oldTargetPosition = m_owner.transform.position;
         bool targetReached = false;
-        Vector3 cPos = m_owner.transform.position;
         float inactivityCounter = m_inactivityTime; 
 
 
