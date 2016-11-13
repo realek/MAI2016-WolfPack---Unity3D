@@ -3,6 +3,7 @@ using System.Collections;
 
 public class ModuleTester : MonoBehaviour {
 
+    public GameObject Target;
     public AIDetectionModule DetectionModule;
     public AIMovementModule MovementModule;
     // Use this for initialization
@@ -10,6 +11,7 @@ public class ModuleTester : MonoBehaviour {
 
         DetectionModule.Initialize(this);
         MovementModule.Initialize(this);
+
 
     }
 
@@ -20,6 +22,11 @@ public class ModuleTester : MonoBehaviour {
     }
 	// Update is called once per frame
 	void Update () {
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            MovementModule.Move(Target);
+        }
 	
 	}
 

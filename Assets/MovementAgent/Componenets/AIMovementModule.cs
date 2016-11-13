@@ -22,6 +22,8 @@ public class AIMovementModule : AIModule
     private float m_medStopDistance = 1.5f;
     [SerializeField]
     private float m_highStopDistance = 3.0f;
+    [SerializeField,Tooltip("The distance threshold between the last known position of the target and the current position, if it is exceeded the path will update.")]
+    private float m_targetPositionDiff = 0.5f;
     private WaitForSeconds m_moduleUpdateTick;
     private Coroutine m_moduleExecutor;
     [Tooltip("How much of the detection area is representated by the obstruction area, the area is used in order to find out if the agents movement is obstructed")]
@@ -29,6 +31,7 @@ public class AIMovementModule : AIModule
     [SerializeField,Tooltip("The module suspends operation once it is inactive for a certain period of time, in seconds.")]
     private float m_inactivityTime;
     private bool m_isInactive;
+    private GameObject m_target;
     protected override void InitializeModule(MonoBehaviour owner)
     {
         m_navAgent = owner.GetComponent<NavMeshAgent>();
@@ -53,9 +56,6 @@ public class AIMovementModule : AIModule
                     m_navAgent.stoppingDistance = m_highStopDistance;
                     break;
         }
-
-       m_moduleExecutor = m_owner.StartCoroutine(ModuleLogic());
-
     }
 
     protected override void ModuleDrawGizmos()
@@ -65,7 +65,7 @@ public class AIMovementModule : AIModule
             Gizmos.color = new Color(0.0f, 0.0f, 0.0f, 0.5f);
             Gizmos.DrawSphere(m_owner.transform.position, ObstructionAreaRange);
             if (m_navAgent != null && m_navAgent.path != null)
-                NavMeshPathDisplay.DisplayPath(m_navAgent.path, new Color(1, 0, 0, 1));
+                NavMeshPathDisplay.DisplayPath(m_navAgent.path, new Color(1, 1, 0, 1));
         }
     }
 
@@ -75,10 +75,11 @@ public class AIMovementModule : AIModule
         NavMeshPath currentPath = new NavMeshPath();
         Collider gameObjCol = null;
         Vector3 oldTargetPosition = m_owner.transform.position;
-        Vector3 cTargetPosition = m_owner.transform.position;
-        Vector3 cFollowTargetPos = m_owner.transform.position;
+        bool targetReached = false;
         Vector3 cPos = m_owner.transform.position;
         float inactivityCounter = m_inactivityTime; 
+
+
         while (true && inactivityCounter > 0)
         {
 
@@ -91,8 +92,38 @@ public class AIMovementModule : AIModule
             }
 
 
+            if (!targetReached)
+            {
+                //check if target has a collider
+                if (gameObjCol == null && !colCheck || gameObjCol != null &&
+                    gameObjCol.gameObject.GetInstanceID() != m_target.GetInstanceID())
+                {
+                    colCheck = true;
+                    gameObjCol = m_target.GetComponent<Collider>();
+                }
 
+                //if distance threshold is exceeded recompute path
+                if ((m_target.transform.position - oldTargetPosition).sqrMagnitude > m_targetPositionDiff * m_targetPositionDiff)
+                {
+                    if (gameObjCol != null)
+                        oldTargetPosition = gameObjCol.ClosestPointOnBounds(m_owner.transform.position);
+                    else
+                        oldTargetPosition = m_target.transform.position;
 
+                    if (m_navAgent.CalculatePath(oldTargetPosition, currentPath))
+                        m_navAgent.SetPath(currentPath);
+                }
+
+                if (m_navAgent.remainingDistance < m_navAgent.stoppingDistance)
+                {
+                    m_navAgent.ResetPath();
+                    currentPath.ClearCorners();
+                    targetReached = true;
+                }
+
+            }
+            else
+                inactivityCounter -= UpdateRate;
 
         }
         m_isInactive = true;
@@ -101,14 +132,13 @@ public class AIMovementModule : AIModule
 
     public void Move(GameObject target)
     {
-        if (m_isInactive)
+        if (m_isInactive || m_moduleExecutor==null)
         {
-
+            m_target = target;
+            m_moduleExecutor = m_owner.StartCoroutine(ModuleLogic());
         }
         else
-        {
-
-        }
+            m_target = target;
     }
 
     protected override void OnModulePause()
@@ -118,6 +148,10 @@ public class AIMovementModule : AIModule
 
     protected override void ShutdownModule()
     {
-        m_owner.StopCoroutine(m_moduleExecutor);
+        if (m_moduleExecutor != null)
+        {
+            m_owner.StopCoroutine(m_moduleExecutor);
+        }
+
     }
 }
