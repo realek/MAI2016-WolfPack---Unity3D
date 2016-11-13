@@ -367,17 +367,15 @@ public class AIDetectionMovementBlock : MonoBehaviour {
                     }
                 case MovementType.Follow:
                     {
-                        if (m_navAgent.remainingDistance < m_navAgent.stoppingDistance && m_navAgent.path.corners.Length > 1 || EntityAtDestination(ref m_detectedEntities))
+                        if (m_navAgent.remainingDistance < m_navAgent.stoppingDistance && m_navAgent.path.corners.Length >= 1 || EntityAtDestination(ref m_detectedEntities))
                         {
                             m_navAgent.ResetPath();
                             currentPath = m_navAgent.path;
                             m_navAgent.Stop();
-                            m_moveState = ActionState.Completed;
                         }
                         else if (m_navAgent.remainingDistance > m_navAgent.stoppingDistance && cPos == transform.position)
                         {
                             m_navAgent.Resume();
-                            m_moveState = ActionState.Running;
                         }
                         cPos = transform.position;
                         break;
@@ -446,7 +444,7 @@ public class AIDetectionMovementBlock : MonoBehaviour {
           //  Debug.Log("FIRED");
 
    
-            Move(TESTTARGET.transform.position);
+            Follow(TESTTARGET);
             
         }
 
