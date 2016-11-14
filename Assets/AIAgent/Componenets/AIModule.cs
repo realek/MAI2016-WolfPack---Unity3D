@@ -10,9 +10,6 @@ public abstract class AIModule {
     [SerializeField]
     protected MonoBehaviour m_owner;
 
-    //module update rate
-    public float UpdateRate = 0.2f;
-
     /// <summary>
     /// Module running state
     /// </summary>
@@ -70,7 +67,8 @@ public abstract class AIModule {
     /// </summary>
     public void DrawGizmos()
     {
-        ModuleDrawGizmos();
+        if(m_owner!=null)
+            ModuleDrawGizmos();
     }
 
     /// <summary>
@@ -87,12 +85,6 @@ public abstract class AIModule {
     /// Implement shutdown code here.
     /// </summary>
     protected abstract void ShutdownModule();
-
-    /// <summary>
-    /// Implement module logic here
-    /// </summary>
-    /// <returns></returns>
-    protected abstract IEnumerator ModuleLogic();
 
     /// <summary>
     /// Implement gizmo code for the module here

@@ -7,12 +7,14 @@ public class WolfBehavoir : MonoBehaviour {
     private AIDetectionModule m_detectionModule;
     [SerializeField]
     private AIMovementModule m_movementModule;
-
+    [SerializeField]
+    private AIMemoryModule m_memoryModule;
     // Use this for initialization
     void Awake () {
 
         m_detectionModule.Initialize(this);
         m_movementModule.Initialize(this);
+        m_memoryModule.Initialize(this);
 	
 	}
 

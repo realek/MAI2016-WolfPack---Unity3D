@@ -20,6 +20,8 @@ public class AIDetectionModule : AIModule {
     private float m_cDARadius;
     private float m_cHARadius;
     private float m_cSRange;
+    //module update rate
+    public float UpdateRate = 0.2f;
     public List<Collider> DetectedGameObjects
     {
         get
@@ -105,7 +107,7 @@ public class AIDetectionModule : AIModule {
         m_detectedEntities = null;
     }
 
-    protected override IEnumerator ModuleLogic()
+    protected IEnumerator ModuleLogic()
     {
         while (true)
         {
@@ -156,20 +158,17 @@ public class AIDetectionModule : AIModule {
 
     protected override void ModuleDrawGizmos()
     {
-        if(m_owner != null)
-        {
-            Gizmos.color = new Color(0.5f, 0.15f, 0.2f, 0.25f);
-            Gizmos.DrawSphere(m_owner.transform.position, DetectionAreaRadius);
-            Gizmos.color = new Color(0.25f, 1, 0, 0.25f);
-            Gizmos.DrawSphere(m_owner.transform.position, (DetectionAreaRadius) * HearingAreaPercentage);
-            Gizmos.color = new Color(1, 0, 0, 1f);
-            Vector3 sightFalloff = m_owner.transform.position;
-            sightFalloff.z += (DetectionAreaRadius) * SightRange;
-            sightFalloff = m_owner.transform.position + (m_owner.transform.rotation * (sightFalloff - m_owner.transform.position));
-            Gizmos.DrawLine(m_owner.transform.position, sightFalloff);
-            Gizmos.DrawLine(m_owner.transform.position, Quaternion.Euler(0, SightAngle / 2, 0) * (sightFalloff - m_owner.transform.position) + m_owner.transform.position);
-            Gizmos.DrawLine(m_owner.transform.position, Quaternion.Euler(0, -(SightAngle / 2), 0) * (sightFalloff - m_owner.transform.position) + m_owner.transform.position);
-        }
+        Gizmos.color = new Color(0.5f, 0.15f, 0.2f, 0.25f);
+        Gizmos.DrawSphere(m_owner.transform.position, DetectionAreaRadius);
+        Gizmos.color = new Color(0.25f, 1, 0, 0.25f);
+        Gizmos.DrawSphere(m_owner.transform.position, (DetectionAreaRadius) * HearingAreaPercentage);
+        Gizmos.color = new Color(1, 0, 0, 1f);
+        Vector3 sightFalloff = m_owner.transform.position;
+        sightFalloff.z += (DetectionAreaRadius) * SightRange;
+        sightFalloff = m_owner.transform.position + (m_owner.transform.rotation * (sightFalloff - m_owner.transform.position));
+        Gizmos.DrawLine(m_owner.transform.position, sightFalloff);
+        Gizmos.DrawLine(m_owner.transform.position, Quaternion.Euler(0, SightAngle / 2, 0) * (sightFalloff - m_owner.transform.position) + m_owner.transform.position);
+        Gizmos.DrawLine(m_owner.transform.position, Quaternion.Euler(0, -(SightAngle / 2), 0) * (sightFalloff - m_owner.transform.position) + m_owner.transform.position);
 
     }
 }

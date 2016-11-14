@@ -30,8 +30,11 @@ public class AIMovementModule : AIModule
     public float ObstructionAreaRange = 0.5f;
     [SerializeField,Tooltip("The module suspends operation once it is inactive for a certain period of time, in seconds.")]
     private float m_inactivityTime = 10.0f;
+    //module update rate
+    public float UpdateRate = 0.2f;
     private bool m_isInactive;
     private GameObject m_target;
+
     protected override void InitializeModule(MonoBehaviour owner)
     {
         m_owner = owner;
@@ -61,16 +64,13 @@ public class AIMovementModule : AIModule
 
     protected override void ModuleDrawGizmos()
     {
-        if (m_owner != null)
-        {
-            Gizmos.color = new Color(0.0f, 0.0f, 0.0f, 0.5f);
-            Gizmos.DrawSphere(m_owner.transform.position, ObstructionAreaRange);
-            if (m_navAgent != null && m_navAgent.path != null)
-                NavMeshPathDisplay.DisplayPath(m_navAgent.path, new Color(1, 1, 0, 1));
-        }
+        Gizmos.color = new Color(0.0f, 0.0f, 0.0f, 0.5f);
+        Gizmos.DrawSphere(m_owner.transform.position, ObstructionAreaRange);
+        if (m_navAgent != null && m_navAgent.path != null)
+            NavMeshPathDisplay.DisplayPath(m_navAgent.path, new Color(1, 1, 0, 1));
     }
 
-    protected override IEnumerator ModuleLogic()
+    protected IEnumerator ModuleLogic()
     {
         bool colCheck = false;
         NavMeshPath currentPath = new NavMeshPath();
