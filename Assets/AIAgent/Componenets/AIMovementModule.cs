@@ -34,6 +34,7 @@ public class AIMovementModule : AIModule
     private GameObject m_target;
     protected override void InitializeModule(MonoBehaviour owner)
     {
+        m_owner = owner;
         m_navAgent = owner.GetComponent<NavMeshAgent>();
         m_moduleUpdateTick = new WaitForSeconds(UpdateRate);
         if (m_navAgent == null)
