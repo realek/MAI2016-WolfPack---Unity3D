@@ -22,6 +22,7 @@ public class WolfBehavoir : MonoBehaviour {
     {
         m_detectionModule.Initialize(this);
         m_movementModule.Initialize(this);
+        m_memoryModule.Initialize(this);
     }
 	// Update is called once per frame
 	void Update () {
@@ -30,8 +31,9 @@ public class WolfBehavoir : MonoBehaviour {
 
     void OnDisable()
     {
-        m_detectionModule.Initialize(this);
-        m_movementModule.Initialize(this);
+        m_detectionModule.Shutdown();
+        m_movementModule.Shutdown();
+        m_memoryModule.Shutdown();
     }
 
     void OnDrawGizmosSelected()
