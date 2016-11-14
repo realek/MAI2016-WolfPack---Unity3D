@@ -4,8 +4,8 @@ using System;
 
 public abstract class BaseComposite : BaseRoutine
 {
-    public BaseRoutine[] m_children;
-    int currentChild;
+    protected BaseRoutine[] m_children;
+    protected int currentChild;
 
     public override void Start()
     {
