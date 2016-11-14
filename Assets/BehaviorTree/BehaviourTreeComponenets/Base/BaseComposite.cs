@@ -13,11 +13,6 @@ public abstract class BaseComposite : BaseRoutine
         m_state = RoutineState.Running;
     }
 
-    public void LoadChildren(params BaseRoutine[] children)
-    {
-        m_children = children;
-    }
-
     public override void Reset()
     {
         foreach (BaseRoutine child in m_children)

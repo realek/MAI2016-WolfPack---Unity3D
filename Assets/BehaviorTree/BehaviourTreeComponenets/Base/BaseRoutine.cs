@@ -13,7 +13,7 @@ public enum RoutineState
 /// <summary>
 /// Base routine class, used to create routines
 /// </summary>
-public abstract class BaseRoutine {
+public abstract class BaseRoutine : UnityEngine.Object {
 
     protected RoutineState m_state = RoutineState.Stopped;
     public RoutineState State

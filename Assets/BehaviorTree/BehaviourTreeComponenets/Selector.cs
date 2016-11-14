@@ -1,22 +1,46 @@
-﻿public class Selector : BaseComposite
+﻿using UnityEngine;
+
+public class Selector : BaseComposite
 {
+    /// <summary>
+    /// Structure containing a condition and a routine, used by selectors
+    /// </summary>
+    public struct SelectorPair
+    {
+        public SelectorCondition condition;
+        public BaseRoutine routine;
+    }
+
+    private new SelectorPair[] m_children;
+
+    public void LoadChildren(params SelectorPair[] children)
+    {
+        m_children = children;
+    }
+
+    public override void Reset()
+    {
+        foreach (SelectorPair child in m_children)
+        {
+            child.routine.Reset();
+        }
+        m_state = RoutineState.Stopped;
+    }
+
     public override RoutineState Tick()
     {
-        if (m_children[currentChild].State == RoutineState.Stopped)
-            m_children[currentChild].Start();
-        else if (m_children[currentChild].IsRunning())
-            return m_state;
-
-        var result = m_children[currentChild].Tick();
-
+        var result = m_children[currentChild].condition.Evaluate();
         switch (result)
         {
             case RoutineState.Succeded:
-                m_state = result;
-                break;
+                if (m_children[currentChild].routine.State == RoutineState.Stopped)
+                    m_children[currentChild].routine.Start();
+
+                m_state = m_children[currentChild].routine.Tick();
+                    break;
 
             case RoutineState.Failed:
-                if (currentChild == m_children.Length - 1)
+                if (currentChild == base.m_children.Length - 1)
                     m_state = result;
                 else
                     currentChild++;

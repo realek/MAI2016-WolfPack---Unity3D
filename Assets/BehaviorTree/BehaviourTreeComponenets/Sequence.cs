@@ -4,6 +4,12 @@ using System;
 
 public class Sequence : BaseComposite
 {
+
+    public void LoadChildren(params BaseRoutine[] children)
+    {
+        m_children = children;
+    }
+
     public override RoutineState Tick()
     {
         if (m_children[currentChild].State == RoutineState.Stopped)
