@@ -70,8 +70,11 @@ public class DayNightCycler : MonoBehaviour
         m_cMinutes = START_MIN;
         m_cDay = START_DAY;
         if (affectLighting) {
+            //9am settings
             dayLighting.enabled = true;
             nightLighting.enabled = false;
+            dayLighting.intensity = 0f;
+            nightLighting.intensity = 1.5f;
         }
     }
 
@@ -82,8 +85,11 @@ public class DayNightCycler : MonoBehaviour
         m_cDay = START_DAY;
         
         if (affectLighting) {
+            //9am settings
             dayLighting.enabled = true;
             nightLighting.enabled = false;
+            dayLighting.intensity = 0f;
+            nightLighting.intensity = 1.5f;
         }
 
         if (m_timeTick == null) //if created as enabled false
