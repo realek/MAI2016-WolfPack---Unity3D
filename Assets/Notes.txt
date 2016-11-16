@@ -1,0 +1,21 @@
+###################################################################################################
+
+### Buttons:
+
+Button				: Action									: Script
+----------------------------------------------------------------------------------------------
+WASD/Arrows			: Move										: PlayerController
+Space				: Jump										: PlayerController
+Shift (Hold)		: Run										: PlayerController
+L					: Lock/Unlock Mouse							: MouseLocking
+T					: Debug.Log CurrentTime						: DayNightCycler
+F					: MoveToTarget								: ModuleTester
+
+###################################################################################################
+
+### BehaviorTree Logic
+
+1. If Energy below 50, enter Sleep state
+2. If Energy above 90 and Playfulness above 50, enter Play State
+
+###################################################################################################

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour {
 
@@ -18,5 +19,9 @@ public class GameManager : MonoBehaviour {
 
     public enum WolfState {
         Idle, Sleep, Feed, Drink, Play, Fight, Explore, Walk, Run 
+    }
+
+    public void LoadScene(string sceneName) {
+        SceneManager.LoadScene(sceneName);
     }
 }

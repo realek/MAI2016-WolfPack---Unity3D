@@ -4,6 +4,7 @@
 public class PlayerController : MonoBehaviour {
     
     public float PlayerSpeed = 2.5f;
+    public float RunningSpeed = 4f;
     public float SmoothStart = 0.1f;
     public float _currentSpeed = 0f;
     public bool allowCamMovement = true;
@@ -20,6 +21,7 @@ public class PlayerController : MonoBehaviour {
     private CollisionFlags _CollisionFlags;
     private Vector2 _Input;
     private bool _isStill;
+    private bool _isRunning;
     private bool _pressedJump;
 
     void Awake() {
@@ -37,6 +39,7 @@ public class PlayerController : MonoBehaviour {
         if (!_pressedJump) {
             _pressedJump = Input.GetButtonDown("Jump");
         }
+        _isRunning = Input.GetKey(KeyCode.LeftShift);
     }
 
     public void ResetMouseLook() {
@@ -57,15 +60,34 @@ public class PlayerController : MonoBehaviour {
 
             // horizontal movement
             _isStill = (desiredMove.x * desiredMove.x < 0.0001f && desiredMove.z * desiredMove.z < 0.0001f);
+            // if still don't move
             if (_isStill) {
                 _currentSpeed = 0;
                 _MoveDir.x = 0;
                 _MoveDir.z = 0;
-            } else if (!_isStill && _currentSpeed < PlayerSpeed - 0.01) {
+            // if running and not reached max run speed increase speed twice as fast as normal
+            } else if (_isRunning && _currentSpeed < RunningSpeed - 0.01) {
+                _currentSpeed += SmoothStart*2;
+                if (_currentSpeed > RunningSpeed) _currentSpeed = RunningSpeed;
+                _MoveDir.x = desiredMove.x*_currentSpeed;
+                _MoveDir.z = desiredMove.z*_currentSpeed;
+            // if running but reached max running speed, continue with it
+            } else if (_isRunning) {
+                _MoveDir.x = desiredMove.x * RunningSpeed;
+                _MoveDir.z = desiredMove.z * RunningSpeed;
+                // if walking and not reached max walk speed increase speed normally
+            } else if (_currentSpeed < PlayerSpeed - 0.01) {
                 _currentSpeed += SmoothStart;
                 if (_currentSpeed > PlayerSpeed) _currentSpeed = PlayerSpeed;
                 _MoveDir.x = desiredMove.x * _currentSpeed;
                 _MoveDir.z = desiredMove.z * _currentSpeed;
+            // if above normal speed but no longer running decrease speed fast
+            } else if (_currentSpeed > PlayerSpeed) {
+                _currentSpeed -= SmoothStart * 2;
+                if (_currentSpeed < 0) _currentSpeed = 0;
+                _MoveDir.x = desiredMove.x * _currentSpeed;
+                _MoveDir.z = desiredMove.z * _currentSpeed;
+            // if walking but reached max running speed, continue with it
             } else {
                 _MoveDir.x = desiredMove.x * PlayerSpeed;
                 _MoveDir.z = desiredMove.z * PlayerSpeed;
@@ -76,7 +98,6 @@ public class PlayerController : MonoBehaviour {
                 _MoveDir.y = -_StickToGroundForce;
 
                 if (_pressedJump) {
-                    Debug.Log("Jumped");
                     _MoveDir.y = _JumpSpeed;
                     _pressedJump = false;
                 }
