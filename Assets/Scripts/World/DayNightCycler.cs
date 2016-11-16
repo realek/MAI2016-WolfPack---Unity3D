@@ -17,8 +17,8 @@ public enum DNCycleTime
 /// <summary>
 /// Day night cycle behavior script
 /// </summary>
-public class DayNightCycler : MonoBehaviour
-{
+public class DayNightCycler : MonoBehaviour {
+    public static DayNightCycler Instance;
 
     [SerializeField, Range(0.1f, 5.0f)]
     float m_timeRate = 1.0f;
@@ -65,6 +65,7 @@ public class DayNightCycler : MonoBehaviour
     // Use this for initialization
     void Awake()
     {
+        Instance = this;
         m_timeTick = new WaitForSeconds(m_timeRate);
         m_cHour = START_TIME_24H;
         m_cMinutes = START_MIN;
@@ -80,6 +81,7 @@ public class DayNightCycler : MonoBehaviour
 
     void OnEnable()
     {
+        Instance = this;
         m_cHour = START_TIME_24H;
         m_cMinutes = START_MIN;
         m_cDay = START_DAY;

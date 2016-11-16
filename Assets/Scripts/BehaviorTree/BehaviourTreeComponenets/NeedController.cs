@@ -3,11 +3,11 @@
 [RequireComponent(typeof(Needs))]
 public class NeedController : MonoBehaviour {
 
-    public DayNightCycler _currTimePeriod;
 
     [SerializeField] private GameManager.WolfState _currentState = GameManager.WolfState.Idle;
     [SerializeField] private GameManager.WolfState _previousState = GameManager.WolfState.Idle;
 
+    private DayNightCycler _currTimePeriod;
     private Needs _myNeeds;
     private float _currTime;
     private float _lastDrank;
@@ -18,9 +18,10 @@ public class NeedController : MonoBehaviour {
      * such as one wolf getting bored easily, another being always hungry and so on
      */
     #region Constants
-    [SerializeField] private float _enEdNoSleep = -0.1f;
-    [SerializeField] private float _enEdSleep = 0.3f;
-    [SerializeField] private float _enEdRun = -0.4f;
+    [SerializeField] private float _enEdNoSleep = -0.02f;
+    [SerializeField] private float _enEdSleep = 0.2f;
+    [SerializeField] private float _enEdRun = -0.04f;
+    [SerializeField] private float _enEdIdle = 0.01f;
     [Space(10)]
     [SerializeField] private float _huEdNoFeedAwake = 0.05f;
     [SerializeField] private float _huEdNoFeedAsleep = 0.03f;
@@ -34,11 +35,11 @@ public class NeedController : MonoBehaviour {
     [SerializeField] private float _feEdIsAttacked = 2f;
     [SerializeField] private float _feEdCalm = -0.5f;
     [Space(10)]
-    [SerializeField] private float _plEdBored = 2f;
-    [SerializeField] private float _plEdPlayFr = -5f;
+    [SerializeField] private float _plEdBored = 0.001f;
+    [SerializeField] private float _plEdPlayFr = -0.5f;
     [Space(10)]
     [SerializeField] private float _cuEdExplore = -1f;
-    [SerializeField] private float _cuEdNoExplore = 0.5f;
+    [SerializeField] private float _cuEdNoExplore = 0.05f;
     [SerializeField] private float _cuEdFriendDie = -10f;
     #endregion
 
@@ -51,6 +52,7 @@ public class NeedController : MonoBehaviour {
 
     void Start () {
 	    _myNeeds = GetComponent<Needs>();
+        _currTimePeriod = DayNightCycler.Instance;
 
         _lastDrank = _currTimePeriod.GetTimeStamp();
         _lastAte = _currTimePeriod.GetTimeStamp();
@@ -62,13 +64,13 @@ public class NeedController : MonoBehaviour {
 
         if (_currentState == GameManager.WolfState.Sleep) {
             Sleeping();
-        }
-        else {
-
+        } else {
             if (_currTimePeriod.CurrentTime == DNCycleTime.Morning) {
                 BedTime();
             }
-            if (_currentState == GameManager.WolfState.Run) {
+            if (_currentState == GameManager.WolfState.Idle) {
+                Idle();
+            } else if (_currentState == GameManager.WolfState.Run) {
                 Running();
             }
 
@@ -110,6 +112,11 @@ public class NeedController : MonoBehaviour {
     private void BedTime() {
         //if gametime is between 23:00 and 6:00 and wolf is not in sleep state
         _myNeeds.EditNeed(GameManager.NeedType.Energy, _enEdNoSleep);
+    }
+
+    private void Idle() {
+        //if staying in one place
+        _myNeeds.EditNeed(GameManager.NeedType.Energy, _enEdIdle);
     }
 
     private void Running() {
