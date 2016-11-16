@@ -2,13 +2,16 @@
 
 public class Needs : MonoBehaviour {
 
-    [SerializeField] private float _hunger = 0;
-    [SerializeField] private float _thirst = 0;
-    [SerializeField] private float _playfulness = 0;
-    [SerializeField] private float _fear = 0;
-    [SerializeField] private float _energy = 100;
-    [SerializeField] private float _curiosity = 100;
-    [SerializeField] private float _health = 100;
+    private const int MIN_VALUE = 0;
+    private const int MAX_VALUE = 100;
+
+    [SerializeField] private float _hunger = MIN_VALUE;
+    [SerializeField] private float _thirst = MIN_VALUE;
+    [SerializeField] private float _playfulness = MIN_VALUE;
+    [SerializeField] private float _fear = MIN_VALUE;
+    [SerializeField] private float _energy = MAX_VALUE;
+    [SerializeField] private float _curiosity = MAX_VALUE;
+    [SerializeField] private float _health = MAX_VALUE;
 
     public void SetNeed(GameManager.NeedType need, float value) {
         switch (need) {
@@ -25,13 +28,13 @@ public class Needs : MonoBehaviour {
 
     public void EditNeed(GameManager.NeedType need, float value) {
         switch (need) {
-            case GameManager.NeedType.Hunger: _hunger += value; if (_hunger < 0) _hunger = 0; if (_hunger > 100) _hunger = 100; break;
-            case GameManager.NeedType.Playfulness: _playfulness += value; if (_playfulness < 0) _playfulness = 0; if (_playfulness > 100) _playfulness = 100; break;
-            case GameManager.NeedType.Fear: _fear += value; if (_fear < 0) _fear = 0; if (_fear > 100) _fear = 100; break;
-            case GameManager.NeedType.Energy: _energy += value; if (_energy < 0) _energy = 0; if (_energy > 100) _energy = 100; break;
-            case GameManager.NeedType.Curiousity: _curiosity += value; if (_curiosity < 0) _curiosity = 0; if (_curiosity > 100) _curiosity = 100; break;
-            case GameManager.NeedType.Thirst: _thirst += value; if (_thirst < 0) _thirst = 0; if (_thirst > 100) _thirst = 100; break;
-            case GameManager.NeedType.Health: _health += value; if (_health < 0) _health = 0; if (_health > 100) _health = 100; break;
+            case GameManager.NeedType.Hunger: _hunger += value; if (_hunger < MIN_VALUE) _hunger = MIN_VALUE; if (_hunger > MAX_VALUE) _hunger = MAX_VALUE; break;
+            case GameManager.NeedType.Playfulness: _playfulness += value; if (_playfulness < MIN_VALUE) _playfulness = MIN_VALUE; if (_playfulness > MAX_VALUE) _playfulness = MAX_VALUE; break;
+            case GameManager.NeedType.Fear: _fear += value; if (_fear < MIN_VALUE) _fear = MIN_VALUE; if (_fear > MAX_VALUE) _fear = MAX_VALUE; break;
+            case GameManager.NeedType.Energy: _energy += value; if (_energy < MIN_VALUE) _energy = MIN_VALUE; if (_energy > MAX_VALUE) _energy = MAX_VALUE; break;
+            case GameManager.NeedType.Curiousity: _curiosity += value; if (_curiosity < MIN_VALUE) _curiosity = MIN_VALUE; if (_curiosity > MAX_VALUE) _curiosity = MAX_VALUE; break;
+            case GameManager.NeedType.Thirst: _thirst += value; if (_thirst < MIN_VALUE) _thirst = MIN_VALUE; if (_thirst > MAX_VALUE) _thirst = MAX_VALUE; break;
+            case GameManager.NeedType.Health: _health += value; if (_health < MIN_VALUE) _health = MIN_VALUE; if (_health > MAX_VALUE) _health = MAX_VALUE; break;
             default: Debug.Log("Unknown need set"); break;
         }
     }
@@ -45,7 +48,7 @@ public class Needs : MonoBehaviour {
             case GameManager.NeedType.Curiousity: return _curiosity;
             case GameManager.NeedType.Thirst: return _thirst;
             case GameManager.NeedType.Health: return _health;
-            default: Debug.Log("Unknown need requested"); return 0;
+            default: Debug.Log("Unknown need requested"); return MIN_VALUE;
         }
     }
 }
