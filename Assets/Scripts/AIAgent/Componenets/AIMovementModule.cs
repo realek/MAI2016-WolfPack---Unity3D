@@ -34,6 +34,7 @@ public class AIMovementModule : AIModule
     public float UpdateRate = 0.2f;
     private bool m_isInactive;
     private GameObject m_target;
+    private bool m_targetReachedFlag;
 
     protected override void InitializeModule(MonoBehaviour owner)
     {
@@ -119,6 +120,7 @@ public class AIMovementModule : AIModule
                     m_navAgent.ResetPath();
                     currentPath.ClearCorners();
                     targetReached = true;
+                    m_targetReachedFlag = true;
                 }
 
             }
@@ -132,6 +134,7 @@ public class AIMovementModule : AIModule
 
     public void Move(GameObject target)
     {
+        m_targetReachedFlag = false;
         if (m_isInactive || m_moduleExecutor==null)
         {
             m_target = target;
@@ -139,6 +142,10 @@ public class AIMovementModule : AIModule
         }
         else
             m_target = target;
+    }
+
+    public bool IsTargetReached() {
+        return m_targetReachedFlag;
     }
 
     protected override void OnModulePause()

@@ -1,9 +1,6 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System;
 using System.Collections.Generic;
-
-
 
 [Serializable]
 public class AIMemoryModule : AIModule
@@ -14,7 +11,7 @@ public class AIMemoryModule : AIModule
         [SerializeField]
         private MemoryTarget target;
         [SerializeField]
-        private GameObject targetObject;
+        public GameObject targetObject;
     }
 
     internal enum MemoryTarget
@@ -45,5 +42,21 @@ public class AIMemoryModule : AIModule
     protected override void ShutdownModule()
     {
         
+    }
+
+    //get a list of all memorized obejects
+    public List<GameObject> GetRememberedObjects() {
+        List<GameObject> myMemory = new List<GameObject>();
+
+        if (m_staticObjects != null && m_staticObjects.Count > 0)
+            foreach (Memory mem in m_staticObjects) {
+                myMemory.Add(mem.targetObject);
+            }
+        if (m_dynamicObjects != null && m_dynamicObjects.Count > 0)
+            foreach (KeyValuePair<Memory, Vector3> mem in m_dynamicObjects) {
+                myMemory.Add(mem.Key.targetObject);
+            }
+
+        return myMemory;
     }
 }
