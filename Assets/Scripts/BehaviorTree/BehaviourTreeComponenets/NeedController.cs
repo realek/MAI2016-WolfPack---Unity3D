@@ -25,11 +25,11 @@ public class NeedController : MonoBehaviour {
     [Space(10)]
     [SerializeField] private float _huEdNoFeedAwake = 0.05f;
     [SerializeField] private float _huEdNoFeedAsleep = 0.03f;
-    [SerializeField] private float _huEdFeed = 5f;
+    [SerializeField] private float _huEdFeed = -5f;
     [Space(10)]
     [SerializeField] private float _thEdNoDrinkAwake = 0.07f;
     [SerializeField] private float _thEdNoDrinkAsleep = 0.02f;
-    [SerializeField] private float _thEdDrinking = 1.5f;
+    [SerializeField] private float _thEdDrinking = -1.5f;
     [Space(10)]
     [SerializeField] private float _feEdFriendDie = 30f;
     [SerializeField] private float _feEdIsAttacked = 2f;
@@ -111,8 +111,8 @@ public class NeedController : MonoBehaviour {
     }
 
     private GameManager.WolfState ReadState() {
-        //return this.GetComponent<BehaviorTree>().GetWolfState();
-        return GameManager.WolfState.Idle;
+        if (this.name == "PlayerWolf") return GameManager.WolfState.Idle; //TODO must be fixed
+        return this.GetComponent<SimpleBT>().GetWolfState();
     }
 
     // checks if any passive stat changes which are not related to the Wolf's current state should happen

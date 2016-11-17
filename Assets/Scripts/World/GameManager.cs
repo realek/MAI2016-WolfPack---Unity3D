@@ -18,7 +18,11 @@ public class GameManager : MonoBehaviour {
     }
 
     public enum WolfState {
-        Idle, Sleep, Feed, Drink, Play, Fight, Explore, Walk, Run, Dead 
+        Idle, Sleep, Feed, Drink, Play, Fight, Explore, Walk, Run, Dead
+    }
+
+    public enum TagName {
+        Water, Food, RestArea, Prey, Enemy, Wolf, None
     }
 
     public void LoadScene(string sceneName) {
