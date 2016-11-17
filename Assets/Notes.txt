@@ -2,20 +2,25 @@
 
 ### Buttons:
 
-Button				: Action									: Script
+Button				: Script									: Action
 ----------------------------------------------------------------------------------------------
-WASD/Arrows			: Move										: PlayerController
-Space				: Jump										: PlayerController
-Shift (Hold)		: Run										: PlayerController
-L					: Lock/Unlock Mouse							: MouseLocking
-T					: Debug.Log CurrentTime						: DayNightCycler
-F					: MoveToTarget								: ModuleTester
+WASD/Arrows			: PlayerController							: Move		
+Space				: PlayerController							: Jump
+Shift (Hold)		: PlayerController							: Run
+L					: MouseLocking								: Lock/Unlock Mouse
+T					: DayNightCycler							: Debug.Log CurrentTime
+F					: ModuleTester								: MoveToTarget
+H					: SimpleBT									: Set AI target to "Water"
 
 ###################################################################################################
 
 ### BehaviorTree Logic
 
-1. If Energy below 50, enter Sleep state
-2. If Energy above 90 and Playfulness above 50, enter Play State
+1. If Energy below 50, start Sequence
+	a) go to rest area //to be replaced with a selector: check nearby (and choose closest); check memory (and choose closest); explore; go to
+	b) enter Sleep state
+2. If Thirst above 40 while all else is fine enter Thirst State
+3. If not in Hunger state while all else is fine and Hunger above 40 enter Hunger State
+4. If Energy above 90 while all else is fine and Playfulness above 50, enter Play State
 
 ###################################################################################################
