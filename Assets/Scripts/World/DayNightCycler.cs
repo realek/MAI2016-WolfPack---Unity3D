@@ -100,6 +100,12 @@ public class DayNightCycler : MonoBehaviour {
         m_clock = StartCoroutine(Clock());
     }
 
+    private void Update() {
+        if (Input.GetKeyDown(KeyCode.T)) {
+            Debug.Log(TimeString());
+        }
+    }
+
     //Method is used to simulate the Day/Night cycle
     IEnumerator Clock()
     {
@@ -194,6 +200,10 @@ public class DayNightCycler : MonoBehaviour {
             m_currentTime = DNCycleTime.Afternoon;
         else if (m_cHour > 18 && m_cHour <= 23)
             m_currentTime = DNCycleTime.Night;
+    }
+
+    public string TimeString() {
+        return ("Day" + m_cDay + " " + m_cHour + ":" + m_cMinutes[0] + m_cMinutes[1]);
     }
 
     void OnDisable()

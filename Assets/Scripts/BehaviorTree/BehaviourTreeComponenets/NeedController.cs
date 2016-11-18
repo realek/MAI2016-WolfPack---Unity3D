@@ -25,11 +25,11 @@ public class NeedController : MonoBehaviour {
     [Space(10)]
     [SerializeField] private float _huEdNoFeedAwake = 0.05f;
     [SerializeField] private float _huEdNoFeedAsleep = 0.03f;
-    [SerializeField] private float _huEdFeed = 5f;
+    [SerializeField] private float _huEdFeed = -5f;
     [Space(10)]
     [SerializeField] private float _thEdNoDrinkAwake = 0.07f;
     [SerializeField] private float _thEdNoDrinkAsleep = 0.02f;
-    [SerializeField] private float _thEdDrinking = 1.5f;
+    [SerializeField] private float _thEdDrinking = -1.5f;
     [Space(10)]
     [SerializeField] private float _feEdFriendDie = 30f;
     [SerializeField] private float _feEdIsAttacked = 2f;
@@ -41,6 +41,8 @@ public class NeedController : MonoBehaviour {
     [SerializeField] private float _cuEdExplore = -1f;
     [SerializeField] private float _cuEdNoExplore = 0.05f;
     [SerializeField] private float _cuEdFriendDie = -10f;
+    [Space(10)]
+    [SerializeField] private float _heEdTooHungry = -0.01f;
     #endregion
 
     [Space(20)]
@@ -48,6 +50,7 @@ public class NeedController : MonoBehaviour {
     [SerializeField] private float _adjFearForLife = 50f; //when health is below this value fear increases twice as fast upon hit
     [SerializeField] private float _timeBeforeGetThirsty = 1f; //when health is below this value fear increases twice as fast upon hit
     [SerializeField] private float _timeBeforeGetHungry = 2.5f; //when health is below this value fear increases twice as fast upon hit
+    [SerializeField] private float _bearableHunger = 90f; //when health is below this value fear increases twice as fast upon hit
     #endregion
 
     void Start () {
@@ -60,6 +63,11 @@ public class NeedController : MonoBehaviour {
 
     void Update() {
         _currentState = ReadState();
+
+        CheckStats();
+
+        if (_currentState == GameManager.WolfState.Dead) return; //add "if distance to player is a lot, destroy game object"
+
         _currTime = _currTimePeriod.GetTimeStamp();
 
         if (_currentState == GameManager.WolfState.Sleep) {
@@ -103,8 +111,15 @@ public class NeedController : MonoBehaviour {
     }
 
     private GameManager.WolfState ReadState() {
-        //return this.GetComponent<BehaviorTree>().GetWolfState();
-        return GameManager.WolfState.Idle;
+        if (this.name == "PlayerWolf") return GameManager.WolfState.Idle; //TODO must be fixed
+        return this.GetComponent<SimpleBT>().GetWolfState();
+    }
+
+    // checks if any passive stat changes which are not related to the Wolf's current state should happen
+    private void CheckStats() {
+        if (_myNeeds.GetNeed(GameManager.NeedType.Hunger) > _bearableHunger) {
+            TooHungry();
+        }
     }
 
     #region EnergyRelated
@@ -126,7 +141,6 @@ public class NeedController : MonoBehaviour {
     #endregion
 
     #region HungerRelated
-
     private void EatingAnimal() {
         //if eating an animal
         _myNeeds.EditNeed(GameManager.NeedType.Hunger, _huEdFeed);
@@ -191,6 +205,14 @@ public class NeedController : MonoBehaviour {
         //if within the recognized area
         _myNeeds.EditNeed(GameManager.NeedType.Curiousity, _cuEdNoExplore);
     }
+    #endregion
+
+    #region HealthRelated
+
+    private void TooHungry() {
+        _myNeeds.EditNeed(GameManager.NeedType.Health, _heEdTooHungry);
+    }
+
     #endregion
 
     #region RelatedToMany
