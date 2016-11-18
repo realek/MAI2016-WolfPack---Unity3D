@@ -3,7 +3,7 @@
 public class SimpleBT : MonoBehaviour {
 
     //private int switchTarget = 0;
-    private GameManager.WolfState lastState = GameManager.WolfState.Idle;
+    private WolfState lastState = WolfState.Idle;
 
     //private void Update() {
     //    if (Input.GetKeyDown(KeyCode.H)) {
@@ -30,7 +30,7 @@ public class SimpleBT : MonoBehaviour {
     //    }
     //}
 
-    public GameManager.WolfState GetWolfState() {
+    public WolfState GetWolfState() {
         return lastState;
     }
 

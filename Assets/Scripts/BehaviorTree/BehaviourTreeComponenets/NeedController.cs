@@ -4,8 +4,8 @@
 public class NeedController : MonoBehaviour {
 
 
-    [SerializeField] private GameManager.WolfState _currentState = GameManager.WolfState.Idle;
-    [SerializeField] private GameManager.WolfState _previousState = GameManager.WolfState.Idle;
+    [SerializeField] private WolfState _currentState = WolfState.Idle;
+    [SerializeField] private WolfState _previousState = WolfState.Idle;
 
     private DayNightCycler _currTimePeriod;
     private Needs _myNeeds;
@@ -66,58 +66,58 @@ public class NeedController : MonoBehaviour {
 
         CheckStats();
 
-        if (_currentState == GameManager.WolfState.Dead) return; //add "if distance to player is a lot, destroy game object"
+        if (_currentState == WolfState.Dead) return; //add "if distance to player is a lot, destroy game object"
 
         _currTime = _currTimePeriod.GetTimeStamp();
 
-        if (_currentState == GameManager.WolfState.Sleep) {
+        if (_currentState == WolfState.Sleep) {
             Sleeping();
         } else {
             if (_currTimePeriod.CurrentTime == DNCycleTime.Morning) {
                 BedTime();
             }
-            if (_currentState == GameManager.WolfState.Idle) {
+            if (_currentState == WolfState.Idle) {
                 Idle();
-            } else if (_currentState == GameManager.WolfState.Run) {
+            } else if (_currentState == WolfState.Run) {
                 Running();
             }
 
-            if (_currentState == GameManager.WolfState.Drink) {
+            if (_currentState == WolfState.Drink) {
                 DrinkingWater();
             } else if (_currTime > _lastDrank + _timeBeforeGetThirsty) {
                 GrowThirsty();
             }
 
-            if (_currentState == GameManager.WolfState.Feed) {
+            if (_currentState == WolfState.Feed) {
                 EatingAnimal();
             } else if (_currTime > _lastAte + _timeBeforeGetHungry) {
                 GrowHungry();
             }
 
-            if (_currentState == GameManager.WolfState.Play) {
+            if (_currentState == WolfState.Play) {
                 PlayingWithFriend();
-            } else if (_currentState != GameManager.WolfState.Fight && _currentState != GameManager.WolfState.Explore) {
+            } else if (_currentState != WolfState.Fight && _currentState != WolfState.Explore) {
                 BoredomIncrease();
             }
         }
 
-        if (_previousState == GameManager.WolfState.Feed && _currentState != GameManager.WolfState.Feed) {
+        if (_previousState == WolfState.Feed && _currentState != WolfState.Feed) {
             _lastAte = _currTimePeriod.GetTimeStamp();
-        } else if (_previousState == GameManager.WolfState.Drink && _currentState != GameManager.WolfState.Drink) {
+        } else if (_previousState == WolfState.Drink && _currentState != WolfState.Drink) {
             _lastDrank = _currTimePeriod.GetTimeStamp();
         }
 
         _previousState = _currentState;
     }
 
-    private GameManager.WolfState ReadState() {
-        if (this.name == "PlayerWolf") return GameManager.WolfState.Idle; //TODO must be fixed
+    private WolfState ReadState() {
+        if (this.name == "PlayerWolf") return WolfState.Idle; //TODO must be fixed
         return this.GetComponent<SimpleBT>().GetWolfState();
     }
 
     // checks if any passive stat changes which are not related to the Wolf's current state should happen
     private void CheckStats() {
-        if (_myNeeds.GetNeed(GameManager.NeedType.Hunger) > _bearableHunger) {
+        if (_myNeeds.GetNeed(WolfNeedType.Hunger) > _bearableHunger) {
             TooHungry();
         }
     }
@@ -126,29 +126,29 @@ public class NeedController : MonoBehaviour {
 
     private void BedTime() {
         //if gametime is between 23:00 and 6:00 and wolf is not in sleep state
-        _myNeeds.EditNeed(GameManager.NeedType.Energy, _enEdNoSleep);
+        _myNeeds.EditNeed(WolfNeedType.Energy, _enEdNoSleep);
     }
 
     private void Idle() {
         //if staying in one place
-        _myNeeds.EditNeed(GameManager.NeedType.Energy, _enEdIdle);
+        _myNeeds.EditNeed(WolfNeedType.Energy, _enEdIdle);
     }
 
     private void Running() {
         //if in run state
-        _myNeeds.EditNeed(GameManager.NeedType.Energy, _enEdRun);
+        _myNeeds.EditNeed(WolfNeedType.Energy, _enEdRun);
     }
     #endregion
 
     #region HungerRelated
     private void EatingAnimal() {
         //if eating an animal
-        _myNeeds.EditNeed(GameManager.NeedType.Hunger, _huEdFeed);
+        _myNeeds.EditNeed(WolfNeedType.Hunger, _huEdFeed);
     }
 
     private void GrowHungry() {
         //if a set amount of time has passed since last food & not in sleep state
-        _myNeeds.EditNeed(GameManager.NeedType.Hunger, _huEdNoFeedAwake);
+        _myNeeds.EditNeed(WolfNeedType.Hunger, _huEdNoFeedAwake);
     }
     #endregion
 
@@ -156,12 +156,12 @@ public class NeedController : MonoBehaviour {
 
     private void GrowThirsty() {
         //if a set amount of time has passed since last drink & not in sleep state
-        _myNeeds.EditNeed(GameManager.NeedType.Thirst, _thEdNoDrinkAwake);
+        _myNeeds.EditNeed(WolfNeedType.Thirst, _thEdNoDrinkAwake);
     }
 
     private void DrinkingWater() {
         //if drinking water
-        _myNeeds.EditNeed(GameManager.NeedType.Thirst, _thEdDrinking);
+        _myNeeds.EditNeed(WolfNeedType.Thirst, _thEdDrinking);
     }
     #endregion
 
@@ -169,16 +169,16 @@ public class NeedController : MonoBehaviour {
 
     private void HitByAttack() {
         //if being hit by another creature increase fear; if at low health, increase fear by twice the value
-        if (_myNeeds.GetNeed(GameManager.NeedType.Health) > _adjFearForLife) {
-            _myNeeds.EditNeed(GameManager.NeedType.Fear, _feEdIsAttacked);
+        if (_myNeeds.GetNeed(WolfNeedType.Health) > _adjFearForLife) {
+            _myNeeds.EditNeed(WolfNeedType.Fear, _feEdIsAttacked);
         } else {
-            _myNeeds.EditNeed(GameManager.NeedType.Fear, 2 * _feEdIsAttacked);
+            _myNeeds.EditNeed(WolfNeedType.Fear, 2 * _feEdIsAttacked);
         }
     }
 
     private void CalmDown() {
         //if no enemy nearby reduce fear
-        _myNeeds.EditNeed(GameManager.NeedType.Fear, _feEdCalm);
+        _myNeeds.EditNeed(WolfNeedType.Fear, _feEdCalm);
     }
     #endregion
 
@@ -186,12 +186,12 @@ public class NeedController : MonoBehaviour {
 
     private void BoredomIncrease() {
         //if not sleeping, playing, fighting or exploring increase playfulness
-        _myNeeds.EditNeed(GameManager.NeedType.Playfulness, _plEdBored);
+        _myNeeds.EditNeed(WolfNeedType.Playfulness, _plEdBored);
     }
 
     private void PlayingWithFriend() {
         //while playing with friend decrease playfulness
-        _myNeeds.EditNeed(GameManager.NeedType.Playfulness, _plEdPlayFr);
+        _myNeeds.EditNeed(WolfNeedType.Playfulness, _plEdPlayFr);
     }
     #endregion
 
@@ -199,18 +199,18 @@ public class NeedController : MonoBehaviour {
 
     private void UnexploredArea() {
         //if not within the recognized area
-        _myNeeds.EditNeed(GameManager.NeedType.Curiousity, _cuEdExplore);
+        _myNeeds.EditNeed(WolfNeedType.Curiousity, _cuEdExplore);
     }
     private void ExploredArea() {
         //if within the recognized area
-        _myNeeds.EditNeed(GameManager.NeedType.Curiousity, _cuEdNoExplore);
+        _myNeeds.EditNeed(WolfNeedType.Curiousity, _cuEdNoExplore);
     }
     #endregion
 
     #region HealthRelated
 
     private void TooHungry() {
-        _myNeeds.EditNeed(GameManager.NeedType.Health, _heEdTooHungry);
+        _myNeeds.EditNeed(WolfNeedType.Health, _heEdTooHungry);
     }
 
     #endregion
@@ -219,15 +219,15 @@ public class NeedController : MonoBehaviour {
 
     private void Sleeping() {
         //if in sleep state
-        _myNeeds.EditNeed(GameManager.NeedType.Energy, _enEdSleep);
-        _myNeeds.EditNeed(GameManager.NeedType.Hunger, _huEdNoFeedAsleep);
-        _myNeeds.EditNeed(GameManager.NeedType.Thirst, _thEdNoDrinkAsleep);
+        _myNeeds.EditNeed(WolfNeedType.Energy, _enEdSleep);
+        _myNeeds.EditNeed(WolfNeedType.Hunger, _huEdNoFeedAsleep);
+        _myNeeds.EditNeed(WolfNeedType.Thirst, _thEdNoDrinkAsleep);
     }
 
     private void SawFriendDie() {
         //if another wolf died nearby
-        _myNeeds.EditNeed(GameManager.NeedType.Fear, _feEdFriendDie);
-        _myNeeds.EditNeed(GameManager.NeedType.Curiousity, _cuEdFriendDie);
+        _myNeeds.EditNeed(WolfNeedType.Fear, _feEdFriendDie);
+        _myNeeds.EditNeed(WolfNeedType.Curiousity, _cuEdFriendDie);
     }
     #endregion
 

@@ -2,8 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class WolfBehavoir : MonoBehaviour {
-    
+public class WolfAIController : MonoBehaviour {
+
+
+
     [SerializeField]
     private AIDetectionModule m_detectionModule;
     [SerializeField]
