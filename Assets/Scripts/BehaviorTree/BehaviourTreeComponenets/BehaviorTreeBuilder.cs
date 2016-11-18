@@ -11,6 +11,8 @@ public class BehaviorTreeBuilder {
     //Last created node
     private BaseParentRoutine m_currentRoutine = null;
     private Stack<BaseParentRoutine> m_routineStack;
+
+
     public BehaviorTreeBuilder()
     {
         m_routineStack = new Stack<BaseParentRoutine>();
@@ -73,51 +75,118 @@ public class BehaviorTreeBuilder {
     public BehaviorTreeBuilder AddCondition(string name, Func<bool> condition, Func<RoutineState> executableAction)
     {
         Action a = new Action();
-        a.name = name;
         a.LoadAction(executableAction);
         Condition cond = new Condition();
+        cond.name = name;
         cond.LoadCondition(condition);
         cond.AddChild(a);
         m_routineStack.Peek().AddChild(cond);
         return this;
     }
 
-
-    public BehaviorTreeBuilder AddInverter()
+    /// <summary>
+    /// Decorator type node that returns the oposite of the current output Success -> Failiure and vice versa.
+    /// </summary>
+    /// <param name="name">node name</param>
+    /// <param name="executableAction">action delegate</param>
+    /// <returns></returns>
+    public BehaviorTreeBuilder AddInverter(string name, Func<RoutineState> executableAction)
     {
+        Action a = new Action();
+        a.LoadAction(executableAction);
+        Inverter inv = new Inverter();
+        inv.name = name;
+        inv.AddChild(a);
+        m_routineStack.Peek().AddChild(inv);
         return this;
     }
 
-    public BehaviorTreeBuilder BeginInverter()
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    public BehaviorTreeBuilder BeginInverter(string name)
     {
+        Inverter inv = new Inverter();
+        inv.name = name;
+        m_routineStack.Peek().AddChild(inv);
+        m_routineStack.Push(inv);
         return this;
     }
 
-    public BehaviorTreeBuilder AddRepeater()
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="executableAction"></param>
+    /// <param name="repeatCount"></param>
+    /// <returns></returns>
+    public BehaviorTreeBuilder AddRepeater(string name, Func<RoutineState> executableAction,int repeatCount)
     {
+        Action a = new Action();
+        a.LoadAction(executableAction);
+        Repeater reap = new Repeater();
+        reap.name = name;
+        reap.numberOfRepeats = repeatCount;
+        reap.AddChild(a);
+        m_routineStack.Peek().AddChild(reap);
         return this;
     }
 
-    public BehaviorTreeBuilder BeginRepeater()
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="repeatCount"></param>
+    /// <returns></returns>
+    public BehaviorTreeBuilder BeginRepeater(string name,int repeatCount)
     {
+        Repeater reap = new Repeater();
+        reap.name = name;
+        m_routineStack.Peek().AddChild(reap);
+        m_routineStack.Push(reap);
         return this;
     }
 
-    public BehaviorTreeBuilder BeginSequence()
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    public BehaviorTreeBuilder BeginSequence(string name)
     {
-
+        Sequence seq = new Sequence();
+        seq.name = name;
+        m_routineStack.Peek().AddChild(seq);
+        m_routineStack.Push(seq);
         return this;
     }
 
-    public BehaviorTreeBuilder BeginSelector()
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    public BehaviorTreeBuilder BeginSelector(string name)
     {
-
+        Selector sel = new Selector();
+        sel.name = name;
+        m_routineStack.Peek().AddChild(sel);
+        m_routineStack.Push(sel);
         return this;
     }
 
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="treeRoutine"></param>
+    /// <returns></returns>
     public BehaviorTreeBuilder AttachTree(BaseRoutine treeRoutine)
     {
+        m_routineStack.Peek().AddChild(treeRoutine);
         return this;
     }
 
