@@ -46,7 +46,7 @@ public class BehaviorTreeBuilder {
     }
 
     /// <summary>
-    /// Decorator type node that automatically fails if its condition fails, else the node it contains is also executed,
+    /// Decorator type node that automatically fails if its condition returns false, else the node it contains is also executed,
     /// this method allows you to give other decorators or composite nodes to the condition node;
     /// </summary>
     /// <param name="name">node name</param>
@@ -65,7 +65,7 @@ public class BehaviorTreeBuilder {
 
 
     /// <summary>
-    /// Decorator type node that automatically fails if its condition fails, else the node it contains is also executed,
+    /// Decorator type node that automatically fails if its condition returns false, else the node it contains is also executed,
     /// this method automatically finishes the decorator node.
     /// </summary>
     /// <param name="name">node name</param>
@@ -159,7 +159,9 @@ public class BehaviorTreeBuilder {
     {
         Sequence seq = new Sequence();
         seq.name = name;
-        m_routineStack.Peek().AddChild(seq);
+
+        if(m_routineStack.Count > 0)
+            m_routineStack.Peek().AddChild(seq);
         m_routineStack.Push(seq);
         return this;
     }
@@ -173,7 +175,8 @@ public class BehaviorTreeBuilder {
     {
         Selector sel = new Selector();
         sel.name = name;
-        m_routineStack.Peek().AddChild(sel);
+        if(m_routineStack.Count>0)
+            m_routineStack.Peek().AddChild(sel);
         m_routineStack.Push(sel);
         return this;
     }

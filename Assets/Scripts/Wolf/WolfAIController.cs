@@ -13,19 +13,30 @@ public class WolfAIController : MonoBehaviour {
     [SerializeField]
     private AIMemoryModule m_memoryModule;
     public bool hasPack;
+    BaseRoutine behaviorTree;
 
 
-
-    BaseRoutine CreateBehavoirTree()
+    BaseRoutine CreateBehaviorTree()
     {
 
         BehaviorTreeBuilder treeBuilder = new BehaviorTreeBuilder();
 
+        BaseRoutine nonPackBehavior = treeBuilder
+            .BeginSequence("move around")
+            .AddAction("move to current target", () => 
+            {
+                Debug.Log("Called movement");
+                return RoutineState.Succeded;
+            })
+            .FinishNode(); 
 
-
-        treeBuilder.BeginSelector("Initial State Selector")
-            .BeginCondition("Non-Pack Behavior", () => { return hasPack; })
-            .AttachTree(null)
+        treeBuilder
+            .BeginSelector("Initial State Selector")
+            .BeginCondition("Non-Pack Behavior", () => 
+            {
+                return !hasPack;
+            })
+            .AttachTree(nonPackBehavior)
             .FinishNode()
             .FinishNode();
 
@@ -33,7 +44,7 @@ public class WolfAIController : MonoBehaviour {
 
 
 
-        return null;
+        return treeBuilder;
     }
 
 
@@ -45,6 +56,8 @@ public class WolfAIController : MonoBehaviour {
         m_detectionModule.Initialize(this);
         m_movementModule.Initialize(this);
         m_memoryModule.Initialize(this);
+        behaviorTree = CreateBehaviorTree();
+        behaviorTree.Start();
     }
 
     void OnEnable()
@@ -55,6 +68,8 @@ public class WolfAIController : MonoBehaviour {
     }
 	// Update is called once per frame
 	void Update () {
+
+        behaviorTree.Tick();
 	   
 	}
 

@@ -14,7 +14,18 @@ public enum AIStoppingDistance
 [Serializable]
 public class AIMovementModule : AIModule
 {
-    public AIStoppingDistance StoppingDistance;
+    [SerializeField]
+    private AIStoppingDistance m_stoppingDistance;
+    public AIStoppingDistance StoppingDistance
+    {
+        set
+        {
+            m_stoppingDistance = value;
+            SetStoppingDistance();
+
+        }
+        get { return m_stoppingDistance; }
+    }
     private NavMeshAgent m_navAgent;
     [SerializeField]
     private float m_lowStopDistance = 0.5f;
@@ -47,19 +58,25 @@ public class AIMovementModule : AIModule
             return;
         }
 
-        switch (StoppingDistance)
+        SetStoppingDistance();
+
+    }
+
+    private void SetStoppingDistance()
+    {
+        switch (m_stoppingDistance)
         {
             case AIStoppingDistance.Low:
-                    m_navAgent.stoppingDistance = m_lowStopDistance;
-                    break;
+                m_navAgent.stoppingDistance = m_lowStopDistance;
+                break;
 
             case AIStoppingDistance.Medium:
-                    m_navAgent.stoppingDistance = m_medStopDistance;
-                    break;
+                m_navAgent.stoppingDistance = m_medStopDistance;
+                break;
 
             case AIStoppingDistance.High:
-                    m_navAgent.stoppingDistance = m_highStopDistance;
-                    break;
+                m_navAgent.stoppingDistance = m_highStopDistance;
+                break;
         }
     }
 
