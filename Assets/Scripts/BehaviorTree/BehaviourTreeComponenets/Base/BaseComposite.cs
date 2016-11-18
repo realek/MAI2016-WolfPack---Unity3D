@@ -1,10 +1,11 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 using System;
 
-public abstract class BaseComposite : BaseRoutine
+public abstract class BaseComposite : BaseParentRoutine
 {
-    protected BaseRoutine[] m_children;
+
+    protected List<BaseRoutine> m_children;
     protected int currentChild;
 
     public override void Start()

@@ -16,6 +16,9 @@ public enum RoutineState
 public abstract class BaseRoutine {
 
     protected RoutineState m_state = RoutineState.Stopped;
+
+
+    public string name;
     public RoutineState State
     {
         get
@@ -24,12 +27,19 @@ public abstract class BaseRoutine {
         }
     }
 
+
+    public bool IsRunning
+    {
+        get
+        {
+            return m_state == RoutineState.Running ? true : false;
+        }
+
+    }
+
     public abstract RoutineState Tick();
     public abstract void Start();
     public abstract void Reset();
-    public bool IsRunning()
-    {
-        return m_state == RoutineState.Running ? true : false;
-    }
+
 
 }

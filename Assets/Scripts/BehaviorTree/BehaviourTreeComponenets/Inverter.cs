@@ -8,7 +8,7 @@ public class Inverter : BaseDecorator
     {
         if (m_child.State == RoutineState.Stopped)
             m_child.Start();
-        else if (m_child.IsRunning())
+        else if (m_child.IsRunning)
             return m_state;
 
         var result = m_child.Tick();

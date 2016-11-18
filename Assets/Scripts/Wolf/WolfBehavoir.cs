@@ -9,6 +9,7 @@ public class WolfBehavoir : MonoBehaviour {
     private AIMovementModule m_movementModule;
     [SerializeField]
     private AIMemoryModule m_memoryModule;
+
     // Use this for initialization
     void Awake () {
 
@@ -23,6 +24,7 @@ public class WolfBehavoir : MonoBehaviour {
         m_detectionModule.Initialize(this);
         m_movementModule.Initialize(this);
         m_memoryModule.Initialize(this);
+        Debug.Log("Called On Enable");
     }
 	// Update is called once per frame
 	void Update () {

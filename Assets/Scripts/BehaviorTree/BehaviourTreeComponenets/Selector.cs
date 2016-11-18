@@ -2,51 +2,49 @@
 
 public class Selector : BaseComposite
 {
-    /// <summary>
-    /// Structure containing a condition and a routine, used by selectors
-    /// </summary>
-    public struct SelectorPair
+    protected new System.Collections.Generic.List<Condition> m_children;
+    public override void AddChild(BaseRoutine child)
     {
-        public SelectorCondition condition;
-        public BaseRoutine routine;
-    }
+        if (m_children == null)
+            m_children = new System.Collections.Generic.List<Condition>();
 
-    private new SelectorPair[] m_children;
+        if (child.GetType() != typeof(Condition))
+        {
+            Debug.LogError("Non-condition node was passed to a Selector type node");
+            return;
+        }
 
-    public void LoadChildren(params SelectorPair[] children)
-    {
-        m_children = children;
+        m_children.Add((Condition)child);
     }
 
     public override void Reset()
     {
-        foreach (SelectorPair child in m_children)
+        foreach (Condition child in m_children)
         {
-            child.routine.Reset();
+            child.Reset();
         }
         m_state = RoutineState.Stopped;
     }
 
     public override RoutineState Tick()
     {
-        var result = m_children[currentChild].condition.Evaluate();
-        switch (result)
+        if (m_children[currentChild].State == RoutineState.Stopped)
+            m_children[currentChild].Start();
+
+        var result = m_children[currentChild].Tick();
+
+        if (result == RoutineState.Succeded)
         {
-            case RoutineState.Succeded:
-                if (m_children[currentChild].routine.State == RoutineState.Stopped)
-                    m_children[currentChild].routine.Start();
-
-                m_state = m_children[currentChild].routine.Tick();
-                    break;
-
-            case RoutineState.Failed:
-                if (currentChild == base.m_children.Length - 1)
-                    m_state = result;
-                else
-                    currentChild++;
-                break;
+            m_state = result;
+            return m_state;
         }
-
-        return m_state;
+        else
+        {
+            if (currentChild == m_children.Count - 1)
+                m_state = result;
+            else
+                currentChild++;
+            return m_state;
+        }
     }
 }

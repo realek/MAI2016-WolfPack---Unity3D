@@ -1,8 +1,8 @@
-﻿public abstract class BaseDecorator : BaseRoutine
+﻿public abstract class BaseDecorator : BaseParentRoutine
 {
     protected BaseRoutine m_child;
 
-    public void LoadChild(BaseRoutine child)
+    public override void AddChild(BaseRoutine child)
     {
         m_child = child;
     }
