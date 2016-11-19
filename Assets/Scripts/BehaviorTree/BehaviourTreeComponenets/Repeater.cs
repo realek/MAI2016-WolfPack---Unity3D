@@ -29,10 +29,14 @@ public class Repeater : BaseDecorator
         switch (numberOfRepeats)
         {
             case 0:
+                if (!m_child.IsRunning)
+                    m_child.Reset();
                 m_child.Tick();
                 break;
 
             default:
+                if (!m_child.IsRunning)
+                    m_child.Reset();
                 var result = m_child.Tick();
                 currentRepeats--;
                 if (currentRepeats == 0)

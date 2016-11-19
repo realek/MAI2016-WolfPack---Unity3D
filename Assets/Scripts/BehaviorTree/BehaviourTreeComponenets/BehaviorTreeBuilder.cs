@@ -145,7 +145,8 @@ public class BehaviorTreeBuilder {
     {
         Repeater reap = new Repeater();
         reap.name = name;
-        m_routineStack.Peek().AddChild(reap);
+        if(m_routineStack.Count>0)
+            m_routineStack.Peek().AddChild(reap);
         m_routineStack.Push(reap);
         return this;
     }

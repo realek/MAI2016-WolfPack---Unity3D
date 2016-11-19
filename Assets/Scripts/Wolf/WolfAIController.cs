@@ -22,27 +22,25 @@ public class WolfAIController : MonoBehaviour {
         BehaviorTreeBuilder treeBuilder = new BehaviorTreeBuilder();
 
         BaseRoutine nonPackBehavior = treeBuilder
-            .BeginSequence("move around")
+            .BeginSequence("move around" )
             .AddAction("move to current target", () => 
             {
-                Debug.Log("Called movement");
+                Debug.Log("Called movement" );
                 return RoutineState.Succeded;
             })
-            .FinishNode(); 
+            .FinishNode();
 
         treeBuilder
+            .BeginRepeater("Tree repeater", 0)
             .BeginSelector("Initial State Selector")
-            .BeginCondition("Non-Pack Behavior", () => 
+            .BeginCondition("Non-Pack Behavior", () =>
             {
                 return !hasPack;
             })
             .AttachTree(nonPackBehavior)
             .FinishNode()
+            .FinishNode()
             .FinishNode();
-
-
-
-
 
         return treeBuilder;
     }
