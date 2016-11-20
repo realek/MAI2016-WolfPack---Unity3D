@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-using System.Collections;
-using System;
+﻿using System;
 
 /// <summary>
 /// Used by selector class, loads up a boolean function as the execution condition and a baseroutine as the executable
@@ -42,11 +40,13 @@ public class Condition : BaseDecorator
             m_state = result;
             return m_state;
         }
+        else if (result == RoutineState.Succeded)
+        {
+            if (m_child.State == RoutineState.Stopped)
+                m_child.Start();
 
-        if (m_child.State == RoutineState.Stopped)
-            m_child.Start();
-
-        m_state = m_child.Tick();
+            m_state = m_child.Tick();
+        }
 
         return m_state;
 

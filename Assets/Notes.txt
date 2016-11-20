@@ -21,7 +21,7 @@ H					: SimpleBT									: Set AI target based on BehaviorTree logic
 	b) enter Sleep state
 2. If Thirst above 40 enter Drink (while going to water)
 3. If Hunger above 40 enter Feed (while going to food)
-4. If Energy above 30 and Playfulness are above 30 Play  (while going to the first wolf in memory list)
+4. If Energy above 30 and Playfulness are above 30 enter Play  (while going to the first wolf in memory list)
 
 ###################################################################################################
 

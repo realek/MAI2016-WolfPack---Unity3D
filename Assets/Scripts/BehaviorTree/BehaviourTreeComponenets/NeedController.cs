@@ -111,8 +111,8 @@ public class NeedController : MonoBehaviour {
     }
 
     private WolfState ReadState() {
-        if (this.name == "PlayerWolf") return WolfState.Idle; //TODO must be fixed
-        return this.GetComponent<SimpleBT>().GetWolfState();
+        if (name == "PlayerWolf") return WolfState.Idle; //TODO must be fixed
+        return GetComponent<SimpleBT>().GetWolfState();   //Get componenet in update O.o GG WP! Achievement Unlocked
     }
 
     // checks if any passive stat changes which are not related to the Wolf's current state should happen

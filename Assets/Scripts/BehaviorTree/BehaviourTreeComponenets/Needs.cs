@@ -2,10 +2,6 @@
 
 public class Needs : MonoBehaviour {
 
-
-
-
-
     private const int MIN_VALUE = 0;
     private const int MAX_VALUE = 100;
 

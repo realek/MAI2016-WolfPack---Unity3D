@@ -92,14 +92,6 @@ public class AIDetectionModule : AIModule {
         return false;
     }
 
-
-
-
-    protected override void OnModulePause()
-    {
-       
-    }
-
     protected override void ShutdownModule()
     {
         m_owner.StopCoroutine(m_moduleExecutor);

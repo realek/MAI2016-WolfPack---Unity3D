@@ -48,6 +48,14 @@ public class AIMovementModule : AIModule
     private GameObject m_target;
     private bool m_targetReached;
     
+    public GameObject Target
+    {
+        get
+        {
+            return m_target;
+        }
+    }
+
     public bool HasReachedTarget
     {
         get
@@ -167,11 +175,6 @@ public class AIMovementModule : AIModule
         }
         else
             m_target = target;
-    }
-
-    protected override void OnModulePause()
-    {
-        //Pause code
     }
 
     protected override void ShutdownModule()
