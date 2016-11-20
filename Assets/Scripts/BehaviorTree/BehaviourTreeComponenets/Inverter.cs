@@ -1,8 +1,4 @@
-﻿using UnityEngine;
-using System.Collections;
-using System;
-
-public class Inverter : BaseDecorator
+﻿public class Inverter : BaseDecorator
 {
     public override RoutineState Tick()
     {
