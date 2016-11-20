@@ -10,10 +10,9 @@ public class WolfAIController : MonoBehaviour {
     private AIDetectionModule m_detectionModule;
     [SerializeField]
     private AIMovementModule m_movementModule;
-    [SerializeField]
-    private AIMemoryModule m_memoryModule;
     public bool hasPack;
     BaseRoutine behaviorTree;
+
 
 
     BaseRoutine CreateBehaviorTree()
@@ -49,33 +48,30 @@ public class WolfAIController : MonoBehaviour {
 
 
     // Use this for initialization
-    void Awake () {
+    private void Awake () {
 
         m_detectionModule.Initialize(this);
         m_movementModule.Initialize(this);
-        m_memoryModule.Initialize(this);
         behaviorTree = CreateBehaviorTree();
         behaviorTree.Start();
     }
 
-    void OnEnable()
+    private void OnEnable()
     {
         m_detectionModule.Initialize(this);
         m_movementModule.Initialize(this);
-        m_memoryModule.Initialize(this);
     }
-	// Update is called once per frame
-	void Update () {
 
+    // Update is called once per frame
+    private void Update()
+    {
         behaviorTree.Tick();
-	   
-	}
+    }
 
-    void OnDisable()
+    private void OnDisable()
     {
         m_detectionModule.Shutdown();
         m_movementModule.Shutdown();
-        m_memoryModule.Shutdown();
     }
 
     void OnDrawGizmosSelected()

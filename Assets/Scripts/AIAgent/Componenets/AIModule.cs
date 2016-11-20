@@ -74,21 +74,21 @@ public abstract class AIModule {
     /// <summary>
     /// Implement initialization code here.
     /// </summary>
-    protected abstract void InitializeModule(MonoBehaviour owner);
+    protected virtual void InitializeModule(MonoBehaviour owner) { }
 
     /// <summary>
     /// Implement pause state code here.
     /// </summary>
-    protected abstract void OnModulePause();
+    protected virtual void OnModulePause() { }
 
     /// <summary>
     /// Implement shutdown code here.
     /// </summary>
-    protected abstract void ShutdownModule();
+    protected virtual void ShutdownModule() { }
 
     /// <summary>
     /// Implement gizmo code for the module here
     /// </summary>
-    protected abstract void ModuleDrawGizmos();
+    protected virtual void ModuleDrawGizmos() { }
 
 }

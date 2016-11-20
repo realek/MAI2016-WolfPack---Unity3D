@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
+using UnityEngine.Events;
 
 public enum AIStoppingDistance
 {
@@ -45,7 +46,15 @@ public class AIMovementModule : AIModule
     public float UpdateRate = 0.2f;
     private bool m_isInactive;
     private GameObject m_target;
-    private bool m_targetReachedFlag;
+    private bool m_targetReached;
+    
+    public bool HasReachedTarget
+    {
+        get
+        {
+            return m_targetReached;
+        }
+    }
 
     protected override void InitializeModule(MonoBehaviour owner)
     {
@@ -94,7 +103,7 @@ public class AIMovementModule : AIModule
         NavMeshPath currentPath = new NavMeshPath();
         Collider gameObjCol = null;
         Vector3 oldTargetPosition = m_owner.transform.position;
-        bool targetReached = false;
+        m_targetReached = false;
         float inactivityCounter = m_inactivityTime; 
 
 
@@ -110,7 +119,7 @@ public class AIMovementModule : AIModule
             }
 
 
-            if (!targetReached)
+            if (!m_targetReached)
             {
                 //check if target has a collider
                 if (gameObjCol == null && !colCheck || gameObjCol != null &&
@@ -136,8 +145,7 @@ public class AIMovementModule : AIModule
                 {
                     m_navAgent.ResetPath();
                     currentPath.ClearCorners();
-                    targetReached = true;
-                    m_targetReachedFlag = true;
+                    m_targetReached = true;
                 }
 
             }
@@ -151,7 +159,7 @@ public class AIMovementModule : AIModule
 
     public void Move(GameObject target)
     {
-        m_targetReachedFlag = false;
+        m_targetReached = false;
         if (m_isInactive || m_moduleExecutor==null)
         {
             m_target = target;
@@ -159,10 +167,6 @@ public class AIMovementModule : AIModule
         }
         else
             m_target = target;
-    }
-
-    public bool IsTargetReached() {
-        return m_targetReachedFlag;
     }
 
     protected override void OnModulePause()
