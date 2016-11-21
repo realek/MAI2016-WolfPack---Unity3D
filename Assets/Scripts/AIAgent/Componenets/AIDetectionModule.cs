@@ -94,7 +94,8 @@ public class AIDetectionModule : AIModule {
 
     protected override void ShutdownModule()
     {
-        m_owner.StopCoroutine(m_moduleExecutor);
+        if(m_moduleExecutor!=null)
+            m_owner.StopCoroutine(m_moduleExecutor);
         m_moduleExecutor = null;
         m_detectedEntities = null;
     }
