@@ -30,24 +30,33 @@ public class Needs
         public float decayRate;
     }
 
+
+    /// <summary>
+    /// Serializeable dummy class, must be removed after tweaking is done
+    /// </summary>
+    [System.Serializable]
+    private class SerializeableNeedtypeNeedDictionary : SerializableDictionary<NeedType, Need> { }
+    ///
+
     /// <summary>
     /// Inner class used to process needs
     /// </summary>
+    [System.Serializable]
     private class Need
     {
         public float value;
         public float decayValue;
-        public WaitForSeconds computedDecayYield;
     }
 
     [SerializeField]
     private List<NeedDescription> m_StartValues;
-    private Dictionary<NeedType,Need> needs;
-
+    [SerializeField]
+    private SerializeableNeedtypeNeedDictionary m_needs;
     private MonoBehaviour m_owner;
     private Coroutine m_executor;
     private bool m_init;
-
+    private WaitForSeconds m_minDecayYield;
+    private float m_minDecayRate;
     /// <summary>
     /// Used to initializes the needs and provides the owner of the instance
     /// </summary>
@@ -57,7 +66,7 @@ public class Needs
         if (!m_init)
         {
             m_owner = owner;
-            needs = new Dictionary<NeedType, Need>();
+            m_needs = new SerializeableNeedtypeNeedDictionary();
 
             if (m_StartValues != null && m_StartValues.Count == (int)NeedType.NEED_COUNT)
             {
@@ -68,18 +77,23 @@ public class Needs
                 {
                     Need need = new Need();
                     need.value = m_StartValues[i].startValue;
-                    if (i == 0)
-                        need.computedDecayYield = new WaitForSeconds(m_StartValues[i].decayRate);
-                    else
-                        need.computedDecayYield = new WaitForSeconds(m_StartValues[i].decayRate - m_StartValues[i - 1].decayRate);
                     need.decayValue = m_StartValues[i].decayValue;
-                    needs.Add(m_StartValues[i].type, need);
+                    if (i == 0)
+                    {
+                        m_minDecayYield = new WaitForSeconds(m_StartValues[i].decayRate);
+                        m_minDecayRate = m_StartValues[i].decayRate;
+
+                    }
+                    else
+                        need.decayValue /= (m_StartValues[i].decayRate/m_minDecayRate);
+
+                    m_needs.Add(m_StartValues[i].type, need);
                 }
             }
             else
             {
                 throw new System.Exception("Missing one or more needs from the list, current need count: "
-                    +needs.Count+" expected: "+(int)NeedType.NEED_COUNT);
+                    +m_needs.Count+" expected: "+(int)NeedType.NEED_COUNT);
             }
 
             m_executor = m_owner.StartCoroutine(NeedsTicker());
@@ -103,7 +117,7 @@ public class Needs
     /// <returns></returns>
     public float GetNeed(NeedType need)
     {
-        return needs[need].value;
+        return m_needs[need].value;
     }
 
     /// <summary>
@@ -115,7 +129,7 @@ public class Needs
     {
         if (value > MAX_NEED_VALUE || value < MIN_NEED_VALUE)
             value = Mathf.Clamp(value, MIN_NEED_VALUE, MAX_NEED_VALUE);
-        needs[need].value = value;
+        m_needs[need].value = value;
     }
 
     /// <summary>
@@ -125,7 +139,7 @@ public class Needs
     /// <param name="modValue"></param>
     public void ModNeed(NeedType need, float modValue)
     {
-        Need cValue = needs[need];
+        Need cValue = m_needs[need];
         cValue.value += modValue;
         if (cValue.value > MAX_NEED_VALUE || cValue.value < MIN_NEED_VALUE)
             cValue.value = Mathf.Clamp(cValue.value, MIN_NEED_VALUE, MAX_NEED_VALUE);
@@ -135,9 +149,10 @@ public class Needs
     {
         while (true)
         {
-            foreach (KeyValuePair<NeedType, Need> need in needs)
+            yield return m_minDecayYield;
+            foreach (KeyValuePair<NeedType, Need> need in m_needs)
             {
-               yield return need.Value.computedDecayYield;
+
 
                 if (need.Value.value > MIN_NEED_VALUE)
                     need.Value.value -= need.Value.decayValue;
