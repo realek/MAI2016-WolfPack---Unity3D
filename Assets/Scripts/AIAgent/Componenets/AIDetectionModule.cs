@@ -104,7 +104,6 @@ public class AIDetectionModule : AIModule {
     {
         while (true)
         {
-
             if (!IsPaused)
                 yield return m_moduleUpdateTick;
             else

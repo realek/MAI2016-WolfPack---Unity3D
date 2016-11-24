@@ -235,18 +235,13 @@ public class BehaviorTreeBuilder {
     //Conversion operator
     public static implicit operator BaseRoutine(BehaviorTreeBuilder builder)
     {
-
-        if (builder.m_complete)
-        {
+        if (builder.m_complete) {
             BaseRoutine cR = builder.m_currentRoutine;
             builder.m_currentRoutine = null;
             return cR;
         }
-        else
-        {
-            Debug.LogError("Incomplete tree, there are decorator/composite nodes that have not been finished.");
-            return null;
-        }
+        Debug.LogError("Incomplete tree, there are decorator/composite nodes that have not been finished.");
+        return null;
     }
 
 }

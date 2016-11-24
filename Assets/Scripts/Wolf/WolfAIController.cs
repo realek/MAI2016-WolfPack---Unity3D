@@ -41,22 +41,23 @@ public class WolfAIController : MonoBehaviour {
 
         treeBuilder
             .BeginRepeater("Tree repeater", 0)
-            .BeginSelector("Initial State Selector")
-            .BeginCondition("Non-Pack Behavior", () =>
-            {
-                Debug.Log("Called non-pack Condition");
-                return !hasPack;
-            })
-            .AttachTree(nonPackBehavior)
-            .FinishNode()
-            .BeginCondition("Pack Behvior", () =>
-            {
-                Debug.Log("Called pack Condition");
-                return hasPack;
-            })
-            .AttachTree(packBehavior)
-            .FinishNode()
-            .FinishNode()
+                .BeginSelector("Initial State Selector")
+                    .BeginCondition("Non-Pack Behavior", () =>
+                    {
+                        Debug.Log("Called non-pack Condition");
+                        return !hasPack;
+                    })
+                    .AttachTree(nonPackBehavior)
+                    .FinishNode()
+
+                    .BeginCondition("Pack Behvior", () =>
+                    {
+                        Debug.Log("Called pack Condition");
+                        return hasPack;
+                    })
+                    .AttachTree(packBehavior)
+                    .FinishNode()
+                .FinishNode()
             .FinishNode();
 
         return treeBuilder;
@@ -67,7 +68,6 @@ public class WolfAIController : MonoBehaviour {
 
     // Use this for initialization
     private void Start () {
-
         m_wolf = GetComponent<Wolf>();
         m_detectionModule.Initialize(this);
         m_movementModule.Initialize(this);
