@@ -28,10 +28,14 @@ public class WolfAIController : MonoBehaviour {
             .BeginSelector("Needs Selection")
             .BeginCondition("Energy", () =>
             {
-                
+
                 return m_wolf.IsNeeded(NeedType.Energy);
             })
-            .AddAction("Rest"()=>{ });
+            .AddAction("Rest", () => 
+            {
+                return RoutineState.Succeded;
+            })
+            .FinishNode();
 
         BaseRoutine nonPackBehavior = treeBuilder
             .BeginSequence("Move Towards")
