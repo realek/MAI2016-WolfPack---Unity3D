@@ -14,18 +14,43 @@ public class WolfAIController : MonoBehaviour {
     public bool hasPack;
     BaseRoutine behaviorTree;
     private Wolf m_wolf;
-
+    public GameObject food;
+    public GameObject drink;
+    public GameObject sleepArea;
+    public Wolf otherWolf;
+    private GameObject currentTarget;
     BaseRoutine CreateBehaviorTree()
     {
 
         BehaviorTreeBuilder treeBuilder = new BehaviorTreeBuilder();
 
+        BaseRoutine needsBehavoir = treeBuilder
+            .BeginSelector("Needs Selection")
+            .BeginCondition("Energy", () =>
+            {
+                
+                return m_wolf.IsNeeded(NeedType.Energy);
+            })
+            .AddAction("Rest"()=>{ });
+
         BaseRoutine nonPackBehavior = treeBuilder
-            .BeginSequence("move around")
+            .BeginSequence("Move Towards")
             .AddAction("move to current target", () => 
             {
-                Debug.Log("Called movement");
-                return RoutineState.Succeded;
+                if (currentTarget == null)
+                    return RoutineState.Failed;
+
+                if (m_movementModule.Move(currentTarget))
+                {
+                    return RoutineState.Running;
+                }
+                else
+                {
+                    if (m_movementModule.reachedTarget && !m_movementModule.unreachableTarget)
+                        return RoutineState.Succeded;
+                    else
+                        return RoutineState.Failed;
+                }
             })
             .FinishNode();
 

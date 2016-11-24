@@ -174,8 +174,6 @@ public class Needs
             yield return m_minDecayYield;
             foreach (KeyValuePair<NeedType, Need> need in m_needs)
             {
-
-
                 if (need.Value.value > MIN_NEED_VALUE)
                     need.Value.value -= need.Value.decayValue;
                 else if (need.Value.value < MIN_NEED_VALUE)

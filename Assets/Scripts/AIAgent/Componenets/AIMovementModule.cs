@@ -72,6 +72,14 @@ public class AIMovementModule : AIModule
         }
     }
 
+    public bool inactive
+    {
+        get
+        {
+            return m_isInactive;
+        }
+    }
+
     protected override void InitializeModule(MonoBehaviour owner)
     {
         m_owner = owner;
@@ -175,8 +183,14 @@ public class AIMovementModule : AIModule
 
     }
 
-    public void Move(GameObject target)
+    public bool Move(GameObject target)
     {
+        if (m_target != null && m_target == target) 
+        {
+            if ((m_target.transform.position - m_navAgent.transform.position).sqrMagnitude
+                <= m_navAgent.stoppingDistance)
+                return false;
+        }
         m_targetReached = false;
         m_failed = false;
         if (m_isInactive || m_moduleExecutor==null)
@@ -186,6 +200,13 @@ public class AIMovementModule : AIModule
         }
         else
             m_target = target;
+        return true;
+    }
+
+    public void Stop()
+    {
+        m_targetReached = true;
+        m_navAgent.ResetPath();
     }
 
     protected override void ShutdownModule()
