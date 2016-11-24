@@ -3,7 +3,7 @@
 public class SimpleBT : MonoBehaviour {
 
     //private int switchTarget = 0;
-    private AnimalState lastState = AnimalState.Idle;
+   // private AnimalState lastState = AnimalState.Idle;
 
     //private void Update() {
     //    if (Input.GetKeyDown(KeyCode.H)) {
@@ -30,9 +30,9 @@ public class SimpleBT : MonoBehaviour {
     //    }
     //}
 
-    public AnimalState GetWolfState() {
-        return lastState;
-    }
+    //public AnimalState GetWolfState() {
+    //    return lastState;
+    //}
 
     //private void RunBehaviorTree() {
     //    {

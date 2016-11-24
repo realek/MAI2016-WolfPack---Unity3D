@@ -5,7 +5,6 @@ public class Wolf : Animal {
 
     [SerializeField]
     private Needs m_needs;
-
 	// Use this for initialization
 	private void Awake () {
 
@@ -13,6 +12,11 @@ public class Wolf : Animal {
         m_needs.Initialize(this);
 	
 	}
+
+    public bool IsNeeded(NeedType need)
+    {
+        return m_needs.IsNeedTriggered(need);
+    }
 
     private void OnEnable()
     {

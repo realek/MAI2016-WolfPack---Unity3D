@@ -47,8 +47,8 @@ public class AIMovementModule : AIModule
     private bool m_isInactive;
     private GameObject m_target;
     private bool m_targetReached;
-    
-    public GameObject Target
+    private bool m_failed;
+    public GameObject target
     {
         get
         {
@@ -56,11 +56,19 @@ public class AIMovementModule : AIModule
         }
     }
 
-    public bool HasReachedTarget
+    public bool reachedTarget
     {
         get
         {
             return m_targetReached;
+        }
+    }
+
+    public bool unreachableTarget
+    {
+        get
+        {
+            return m_failed;
         }
     }
 
@@ -127,7 +135,7 @@ public class AIMovementModule : AIModule
             }
 
 
-            if (!m_targetReached)
+            if (!m_targetReached && !m_failed)
             {
                 //check if target has a collider
                 if (gameObjCol == null && !colCheck || gameObjCol != null &&
@@ -147,6 +155,8 @@ public class AIMovementModule : AIModule
 
                     if (m_navAgent.CalculatePath(oldTargetPosition, currentPath))
                         m_navAgent.SetPath(currentPath);
+                    else
+                        m_failed = true;
                 }
 
                 if (m_navAgent.remainingDistance < m_navAgent.stoppingDistance)
@@ -168,6 +178,7 @@ public class AIMovementModule : AIModule
     public void Move(GameObject target)
     {
         m_targetReached = false;
+        m_failed = false;
         if (m_isInactive || m_moduleExecutor==null)
         {
             m_target = target;
