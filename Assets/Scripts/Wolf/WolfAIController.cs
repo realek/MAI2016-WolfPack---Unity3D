@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
+[RequireComponent(typeof(Wolf))]
 public class WolfAIController : MonoBehaviour {
 
 
@@ -12,8 +13,7 @@ public class WolfAIController : MonoBehaviour {
     private AIMovementModule m_movementModule;
     public bool hasPack;
     BaseRoutine behaviorTree;
-    public Needs needs;
-
+    private Wolf m_wolf;
 
     BaseRoutine CreateBehaviorTree()
     {
@@ -66,9 +66,9 @@ public class WolfAIController : MonoBehaviour {
 
 
     // Use this for initialization
-    private void Awake () {
+    private void Start () {
 
-        needs.Initialize(this);
+        m_wolf = GetComponent<Wolf>();
         m_detectionModule.Initialize(this);
         m_movementModule.Initialize(this);
         behaviorTree = CreateBehaviorTree();
@@ -77,7 +77,6 @@ public class WolfAIController : MonoBehaviour {
 
     private void OnEnable()
     {
-        needs.Initialize(this);
         m_detectionModule.Initialize(this);
         m_movementModule.Initialize(this);
     }
@@ -90,7 +89,6 @@ public class WolfAIController : MonoBehaviour {
 
     private void OnDisable()
     {
-        needs.Shutdown();
         m_detectionModule.Shutdown();
         m_movementModule.Shutdown();
     }

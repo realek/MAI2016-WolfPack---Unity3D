@@ -16,7 +16,6 @@ public class Needs
 {
     private const int MIN_NEED_VALUE = 0;
     private const int MAX_NEED_VALUE = 100;
-
     /// <summary>
     /// Inner struct used to describe needs
     /// </summary>
@@ -28,15 +27,9 @@ public class Needs
         public float startValue;
         public float decayValue;
         public float decayRate;
+        public float threshold;
     }
 
-
-    /// <summary>
-    /// Serializeable dummy class, must be removed after tweaking is done
-    /// </summary>
-    [System.Serializable]
-    private class SerializeableNeedtypeNeedDictionary : SerializableDictionary<NeedType, Need> { }
-    ///
 
     /// <summary>
     /// Inner class used to process needs
@@ -46,9 +39,32 @@ public class Needs
     {
         public float value;
         public float decayValue;
+        public float threshold;
+
+        /// <summary>
+        /// returns true if the need value is below its theshold
+        /// </summary>
+        public bool Triggered
+        {
+            get
+            {
+                if (value <= threshold)
+                    return true;
+                else
+                    return false;
+            }
+        }
     }
 
-    [SerializeField]
+
+    /// <summary>
+    /// Serializeable dummy class, must be removed after tweaking is done
+    /// </summary>
+    [System.Serializable]
+    private class SerializeableNeedtypeNeedDictionary : SerializableDictionary<NeedType, Need> { }
+
+
+    [SerializeField,Tooltip("Start values for needs, current need count is specified in the NeedType enum as NEED_COUNT")]
     private List<NeedDescription> m_StartValues;
     [SerializeField]
     private SerializeableNeedtypeNeedDictionary m_needs;
@@ -78,6 +94,7 @@ public class Needs
                     Need need = new Need();
                     need.value = m_StartValues[i].startValue;
                     need.decayValue = m_StartValues[i].decayValue;
+                    need.threshold = m_StartValues[i].threshold;
                     if (i == 0)
                     {
                         m_minDecayYield = new WaitForSeconds(m_StartValues[i].decayRate);
@@ -118,6 +135,11 @@ public class Needs
     public float GetNeed(NeedType need)
     {
         return m_needs[need].value;
+    }
+
+    public bool IsNeedTriggered(NeedType need)
+    {
+        return m_needs[need].Triggered;
     }
 
     /// <summary>
@@ -164,58 +186,3 @@ public class Needs
     }
 }
 
-
-/*
-public class Needs : MonoBehaviour {
-
-    private const int MIN_VALUE = 0;
-    private const int MAX_VALUE = 100;
-
-    [SerializeField] private float _hunger = MIN_VALUE;
-    [SerializeField] private float _thirst = MIN_VALUE;
-    [SerializeField] private float _playfulness = MIN_VALUE;
-    [SerializeField] private float _fear = MIN_VALUE;
-    [SerializeField] private float _energy = MAX_VALUE;
-    [SerializeField] private float _curiosity = MAX_VALUE;
-    [SerializeField] private float _health = MAX_VALUE;
-
-    public void SetNeed(WolfNeedType need, float value) {
-        switch (need) {
-          case WolfNeedType.Hunger: _hunger = value; break;
-          case WolfNeedType.Playfulness: _playfulness = value; break;
-          case WolfNeedType.Fear: _fear = value; break;
-          case WolfNeedType.Energy: _energy = value; break;
-          case WolfNeedType.Curiousity: _curiosity = value; break;
-          case WolfNeedType.Thirst: _thirst = value; break;
-          case WolfNeedType.Health: _health = value; break;
-          default: Debug.Log("Unknown need set"); break;
-        }
-    }
-
-    public void EditNeed(WolfNeedType need, float value) {
-        switch (need) {
-            case WolfNeedType.Hunger: _hunger += value; if (_hunger < MIN_VALUE) _hunger = MIN_VALUE; if (_hunger > MAX_VALUE) _hunger = MAX_VALUE; break;
-            case WolfNeedType.Playfulness: _playfulness += value; if (_playfulness < MIN_VALUE) _playfulness = MIN_VALUE; if (_playfulness > MAX_VALUE) _playfulness = MAX_VALUE; break;
-            case WolfNeedType.Fear: _fear += value; if (_fear < MIN_VALUE) _fear = MIN_VALUE; if (_fear > MAX_VALUE) _fear = MAX_VALUE; break;
-            case WolfNeedType.Energy: _energy += value; if (_energy < MIN_VALUE) _energy = MIN_VALUE; if (_energy > MAX_VALUE) _energy = MAX_VALUE; break;
-            case WolfNeedType.Curiousity: _curiosity += value; if (_curiosity < MIN_VALUE) _curiosity = MIN_VALUE; if (_curiosity > MAX_VALUE) _curiosity = MAX_VALUE; break;
-            case WolfNeedType.Thirst: _thirst += value; if (_thirst < MIN_VALUE) _thirst = MIN_VALUE; if (_thirst > MAX_VALUE) _thirst = MAX_VALUE; break;
-            case WolfNeedType.Health: _health += value; if (_health < MIN_VALUE) _health = MIN_VALUE; if (_health > MAX_VALUE) _health = MAX_VALUE; break;
-            default: Debug.Log("Unknown need set"); break;
-        }
-    }
-
-    public float GetNeed(WolfNeedType need) {
-        switch (need) {
-            case WolfNeedType.Hunger: return _hunger;
-            case WolfNeedType.Playfulness: return _playfulness;
-            case WolfNeedType.Fear: return _fear;
-            case WolfNeedType.Energy: return _energy;
-            case WolfNeedType.Curiousity: return _curiosity;
-            case WolfNeedType.Thirst: return _thirst;
-            case WolfNeedType.Health: return _health;
-            default: Debug.Log("Unknown need requested"); return MIN_VALUE;
-        }
-    }
-}
-*/
