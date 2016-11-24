@@ -131,7 +131,7 @@ public class AIMovementModule : AIModule
         float inactivityCounter = m_inactivityTime; 
 
 
-        while (true && inactivityCounter > 0)
+        while (inactivityCounter > 0)
         {
 
             if (!IsPaused)
