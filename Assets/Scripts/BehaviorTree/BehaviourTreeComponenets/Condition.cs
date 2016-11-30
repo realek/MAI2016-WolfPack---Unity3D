@@ -23,6 +23,7 @@ public class Condition : BaseDecorator
 
     public override void Reset()
     {
+        if (m_child != null)
         m_child.Reset();
         m_state = RoutineState.Stopped;
     }
@@ -42,9 +43,10 @@ public class Condition : BaseDecorator
         }
         else if (result == RoutineState.Succeded)
         {
-            if (m_child.State == RoutineState.Stopped)
+            if (m_child != null && m_child.State == RoutineState.Stopped)
                 m_child.Start();
 
+            if (m_child != null)
             m_state = m_child.Tick();
         }
 
