@@ -19,5 +19,6 @@ public abstract class BaseComposite : BaseParentRoutine
             child.Reset();
         }
         m_state = RoutineState.Stopped;
+        currentChild = 0;
     }
 }

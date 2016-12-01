@@ -24,39 +24,51 @@ public class WolfAIController : MonoBehaviour {
 
         BehaviorTreeBuilder treeBuilder = new BehaviorTreeBuilder();
 
+
+        BaseRoutine moveToTarget = treeBuilder
+    .BeginSequence("Move Towards")
+    .AddAction("move to current target", () =>
+    {
+        if (currentTarget == null)
+            return RoutineState.Failed;
+
+        m_movementModule.Move(currentTarget);
+        if (m_movementModule.reachedTarget && !m_movementModule.unreachableTarget)
+            return RoutineState.Succeded;
+        else if (!m_movementModule.reachedTarget && !m_movementModule.unreachableTarget)
+            return RoutineState.Running;
+        else
+            return RoutineState.Failed;
+    })
+    .FinishNode();
+
+
         BaseRoutine needsBehavoir = treeBuilder
             .BeginSelector("Needs Selection")
             .BeginCondition("Energy", () =>
             {
-
-                return m_wolf.IsNeeded(NeedType.Energy);
+                return m_wolf.needs.IsNeedTriggered(NeedType.Energy); ;
             })
-            .AddAction("Rest", () => 
+            .BeginSequence("Go Rest")
+            .AddAction("Set Target", () =>
+             {
+                 currentTarget = sleepArea;
+                 return RoutineState.Succeded;
+             })
+            .AttachTree(moveToTarget)
+            .AddAction("Rest", () =>
             {
+                Debug.Log("Rested");
+                m_wolf.needs.SetNeed(NeedType.Energy, 100);
+                currentTarget = null;
                 return RoutineState.Succeded;
+
             })
+            .FinishNode()
+            .FinishNode()
             .FinishNode();
 
-        BaseRoutine nonPackBehavior = treeBuilder
-            .BeginSequence("Move Towards")
-            .AddAction("move to current target", () => 
-            {
-                if (currentTarget == null)
-                    return RoutineState.Failed;
 
-                if (m_movementModule.Move(currentTarget))
-                {
-                    return RoutineState.Running;
-                }
-                else
-                {
-                    if (m_movementModule.reachedTarget && !m_movementModule.unreachableTarget)
-                        return RoutineState.Succeded;
-                    else
-                        return RoutineState.Failed;
-                }
-            })
-            .FinishNode();
 
         BaseRoutine packBehavior = treeBuilder
             .BeginSequence("move with pack")
@@ -71,19 +83,19 @@ public class WolfAIController : MonoBehaviour {
         treeBuilder
             .BeginRepeater("Tree repeater", 0)
             .BeginSelector("Initial State Selector")
-            .BeginCondition("Non-Pack Behavior", () =>
-            {
-                Debug.Log("Called non-pack Condition");
-                return !hasPack;
-            })
-            .AttachTree(nonPackBehavior)
-            .FinishNode()
-            .BeginCondition("Pack Behvior", () =>
+            .BeginCondition("Pack Behavior", () =>
             {
                 Debug.Log("Called pack Condition");
                 return hasPack;
             })
-            .AttachTree(packBehavior)
+            .AttachTree(moveToTarget)
+            .FinishNode()
+            .BeginCondition("Non-Pack Behvaior", () =>
+            {
+                Debug.Log("Called Non-Pack Condition");
+                return !hasPack;
+            })
+            .AttachTree(needsBehavoir)
             .FinishNode()
             .FinishNode()
             .FinishNode();

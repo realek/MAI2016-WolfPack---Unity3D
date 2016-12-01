@@ -18,12 +18,14 @@ public class Sequence : BaseComposite
 
     public override RoutineState Tick()
     {
+        Debug.Log(name);
+
         if (m_children[currentChild].State == RoutineState.Stopped)
             m_children[currentChild].Start();
-        else if (m_children[currentChild].IsRunning)
-            return m_state;
 
         var result = m_children[currentChild].Tick();
+
+        
 
         switch (result)
         {

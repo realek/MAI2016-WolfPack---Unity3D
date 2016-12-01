@@ -121,6 +121,14 @@ public class AIMovementModule : AIModule
             NavMeshPathDisplay.DisplayPath(m_navAgent.path, new Color(1, 1, 0, 1));
     }
 
+    public float CurrentStoppingDistance
+    {
+        get
+        {
+            return m_navAgent.stoppingDistance;
+        }
+    }
+
     protected IEnumerator ModuleLogic()
     {
         bool colCheck = false;
@@ -191,11 +199,12 @@ public class AIMovementModule : AIModule
                 <= m_navAgent.stoppingDistance)
                 return false;
         }
-        m_targetReached = false;
-        m_failed = false;
+
         if (m_isInactive || m_moduleExecutor==null)
         {
             m_target = target;
+            m_targetReached = false;
+            m_failed = false;
             m_moduleExecutor = m_owner.StartCoroutine(ModuleLogic());
         }
         else
