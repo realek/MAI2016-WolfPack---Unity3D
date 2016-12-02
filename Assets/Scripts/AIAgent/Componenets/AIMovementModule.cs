@@ -178,7 +178,7 @@ public class AIMovementModule : AIModule
                         m_failed = true;
                 }
 
-                if (m_navAgent.remainingDistance < m_navAgent.stoppingDistance)
+                if (m_navAgent.remainingDistance <= m_navAgent.stoppingDistance)
                 {
                     m_navAgent.ResetPath();
                     currentPath.ClearCorners();

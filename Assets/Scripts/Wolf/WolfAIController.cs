@@ -85,6 +85,26 @@ public class WolfAIController : MonoBehaviour {
             })
             .FinishNode()
             .FinishNode()
+            .BeginCondition("Water", () =>
+            {
+                if (m_wolf.needs.IsNeedTriggered(NeedType.Thirst))
+                {
+                    currentTarget = drink;
+                    return true;
+                }
+                else return false;
+            })
+            .BeginSequence("Go Drink")
+            .AttachTree(moveToTarget)
+            .AddAction("Drink", () =>
+            {
+                Debug.Log("Drink");
+                m_wolf.needs.SetNeed(NeedType.Thirst, 100);
+                return RoutineState.Succeded;
+
+            })
+            .FinishNode()
+            .FinishNode()
             .FinishNode();
 
 
