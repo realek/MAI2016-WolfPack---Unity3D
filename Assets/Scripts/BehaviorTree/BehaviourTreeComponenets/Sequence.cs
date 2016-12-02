@@ -24,8 +24,6 @@ public class Sequence : BaseComposite
 
         var result = m_children[currentChild].Tick();
 
-        
-
         switch (result)
         {
             case RoutineState.Succeded:
