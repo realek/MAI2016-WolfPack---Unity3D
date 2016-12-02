@@ -34,7 +34,7 @@ public class Selector : BaseComposite
 
         var result = m_children[currentChild].Tick();
 
-        if (result == RoutineState.Succeded)
+        if (result == RoutineState.Succeded || result == RoutineState.Running)
         {
             m_state = result;
             return m_state;

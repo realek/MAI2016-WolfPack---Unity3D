@@ -44,9 +44,12 @@ public class AIMovementModule : AIModule
     private float m_inactivityTime = 10.0f;
     //module update rate
     public float UpdateRate = 0.2f;
+    [SerializeField]
     private bool m_isInactive;
     private GameObject m_target;
+    [SerializeField]
     private bool m_targetReached;
+    [SerializeField]
     private bool m_failed;
     public GameObject target
     {
@@ -193,12 +196,10 @@ public class AIMovementModule : AIModule
 
     public bool Move(GameObject target)
     {
-        if (m_target != null && m_target == target) 
-        {
-            if ((m_target.transform.position - m_navAgent.transform.position).sqrMagnitude
-                <= m_navAgent.stoppingDistance)
-                return false;
-        }
+
+        if (target == null || (m_target == target && (m_target.transform.position - m_navAgent.transform.position).sqrMagnitude
+    <= m_navAgent.stoppingDistance))
+            return false;
 
         if (m_isInactive || m_moduleExecutor==null)
         {
@@ -206,10 +207,19 @@ public class AIMovementModule : AIModule
             m_targetReached = false;
             m_failed = false;
             m_moduleExecutor = m_owner.StartCoroutine(ModuleLogic());
+            return true;
         }
-        else
+
+        if (m_target != target && (target.transform.position - m_navAgent.transform.position).sqrMagnitude
+    > m_navAgent.stoppingDistance)
+        {
+            m_targetReached = false;
+            m_failed = false;
             m_target = target;
-        return true;
+            return true;
+        }
+
+        return false;
     }
 
     public void Stop()

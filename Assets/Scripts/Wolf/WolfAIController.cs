@@ -47,20 +47,39 @@ public class WolfAIController : MonoBehaviour {
             .BeginSelector("Needs Selection")
             .BeginCondition("Energy", () =>
             {
-                return m_wolf.needs.IsNeedTriggered(NeedType.Energy); ;
+                if (m_wolf.needs.IsNeedTriggered(NeedType.Energy))
+                {
+                    currentTarget = sleepArea;
+                    return true;
+                }
+                else return false;
             })
             .BeginSequence("Go Rest")
-            .AddAction("Set Target", () =>
-             {
-                 currentTarget = sleepArea;
-                 return RoutineState.Succeded;
-             })
             .AttachTree(moveToTarget)
             .AddAction("Rest", () =>
             {
                 Debug.Log("Rested");
                 m_wolf.needs.SetNeed(NeedType.Energy, 100);
-                currentTarget = null;
+                return RoutineState.Succeded;
+
+            })
+            .FinishNode()
+            .FinishNode()
+            .BeginCondition("Food", () =>
+            {
+                if (m_wolf.needs.IsNeedTriggered(NeedType.Hunger))
+                {
+                    currentTarget = food;
+                    return true;
+                }
+                else return false;
+            })
+            .BeginSequence("Go Eat")
+            .AttachTree(moveToTarget)
+            .AddAction("Eat", () =>
+            {
+                Debug.Log("Feast");
+                m_wolf.needs.SetNeed(NeedType.Hunger, 100);
                 return RoutineState.Succeded;
 
             })
@@ -85,14 +104,14 @@ public class WolfAIController : MonoBehaviour {
             .BeginSelector("Initial State Selector")
             .BeginCondition("Pack Behavior", () =>
             {
-                Debug.Log("Called pack Condition");
+              //  Debug.Log("Called pack Condition");
                 return hasPack;
             })
             .AttachTree(moveToTarget)
             .FinishNode()
             .BeginCondition("Non-Pack Behvaior", () =>
             {
-                Debug.Log("Called Non-Pack Condition");
+             //   Debug.Log("Called Non-Pack Condition");
                 return !hasPack;
             })
             .AttachTree(needsBehavoir)

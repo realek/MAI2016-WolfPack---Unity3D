@@ -18,7 +18,6 @@ public class Sequence : BaseComposite
 
     public override RoutineState Tick()
     {
-        Debug.Log(name);
 
         if (m_children[currentChild].State == RoutineState.Stopped)
             m_children[currentChild].Start();
