@@ -1,5 +1,5 @@
 ﻿using System;
-
+using UnityEngine;
 /// <summary>
 /// Used by selector class, loads up a boolean function as the execution condition and a baseroutine as the executable
 /// </summary>
@@ -34,14 +34,14 @@ public class Condition : BaseDecorator
     /// <returns></returns>
     public override RoutineState Tick()
     {
-        var result = m_condition() ? RoutineState.Succeded : RoutineState.Failed;
+        var result = m_condition();
 
-        if (result == RoutineState.Failed)
+        if (!result)
         {
-            m_state = result;
+            m_state = RoutineState.Failed;
             return m_state;
         }
-        else if (result == RoutineState.Succeded)
+        else
         {
             if (m_child != null && m_child.State == RoutineState.Stopped)
                 m_child.Start();
@@ -49,7 +49,6 @@ public class Condition : BaseDecorator
             if (m_child != null)
             m_state = m_child.Tick();
         }
-
         return m_state;
 
 

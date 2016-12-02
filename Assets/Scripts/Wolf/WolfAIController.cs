@@ -24,66 +24,117 @@ public class WolfAIController : MonoBehaviour {
 
         BehaviorTreeBuilder treeBuilder = new BehaviorTreeBuilder();
 
-        //BaseRoutine needsBehavoir = treeBuilder
-        //    .BeginSelector("Needs Selection")
-        //    .BeginCondition("Energy", () =>
-        //    {
 
-        //        return m_wolf.IsNeeded(NeedType.Energy);
-        //    })
-        //    .AddAction("Rest", () => 
-        //    {
-        //        return RoutineState.Succeded;
-        //    })
-        //    .FinishNode();
+        BaseRoutine moveToTarget = treeBuilder
+    .BeginSequence("Move Towards")
+    .AddAction("move to current target", () =>
+    {
+        if (currentTarget == null)
+            return RoutineState.Failed;
 
-        //BaseRoutine nonPackBehavior = treeBuilder
-        //    .BeginSequence("Move Towards")
-        //    .AddAction("move to current target", () => 
-        //    {
-        //        if (currentTarget == null)
-        //            return RoutineState.Failed;
+        m_movementModule.Move(currentTarget);
+        if (m_movementModule.reachedTarget && !m_movementModule.unreachableTarget)
+            return RoutineState.Succeded;
+        else if (!m_movementModule.reachedTarget && !m_movementModule.unreachableTarget)
+            return RoutineState.Running;
+        else
+            return RoutineState.Failed;
+    })
+    .FinishNode();
 
-        //        if (m_movementModule.Move(currentTarget))
-        //        {
-        //            return RoutineState.Running;
-        //        }
-        //        else
-        //        {
-        //            if (m_movementModule.reachedTarget && !m_movementModule.unreachableTarget)
-        //                return RoutineState.Succeded;
-        //            else
-        //                return RoutineState.Failed;
-        //        }
-        //    })
-        //    .FinishNode();
 
-        //BaseRoutine packBehavior = treeBuilder
-        //    .BeginSequence("move with pack")
-        //    .AddAction("Pack movement", () =>
-        //     {
-        //         Debug.Log("Called pack movement");
-        //         return RoutineState.Succeded;
-        //     })
-        //     .FinishNode();
+        BaseRoutine needsBehavoir = treeBuilder
+            .BeginSelector("Needs Selection")
+            .BeginCondition("Energy", () =>
+            {
+                if (m_wolf.needs.IsNeedTriggered(NeedType.Energy))
+                {
+                    currentTarget = sleepArea;
+                    return true;
+                }
+                else return false;
+            })
+            .BeginSequence("Go Rest")
+            .AttachTree(moveToTarget)
+            .AddAction("Rest", () =>
+            {
+                Debug.Log("Rested");
+                m_wolf.needs.SetNeed(NeedType.Energy, 100);
+                return RoutineState.Succeded;
+
+            })
+            .FinishNode()
+            .FinishNode()
+            .BeginCondition("Food", () =>
+            {
+                if (m_wolf.needs.IsNeedTriggered(NeedType.Hunger))
+                {
+                    currentTarget = food;
+                    return true;
+                }
+                else return false;
+            })
+            .BeginSequence("Go Eat")
+            .AttachTree(moveToTarget)
+            .AddAction("Eat", () =>
+            {
+                Debug.Log("Feast");
+                m_wolf.needs.SetNeed(NeedType.Hunger, 100);
+                return RoutineState.Succeded;
+
+            })
+            .FinishNode()
+            .FinishNode()
+            .BeginCondition("Water", () =>
+            {
+                if (m_wolf.needs.IsNeedTriggered(NeedType.Thirst))
+                {
+                    currentTarget = drink;
+                    return true;
+                }
+                else return false;
+            })
+            .BeginSequence("Go Drink")
+            .AttachTree(moveToTarget)
+            .AddAction("Drink", () =>
+            {
+                Debug.Log("Drink");
+                m_wolf.needs.SetNeed(NeedType.Thirst, 100);
+                return RoutineState.Succeded;
+
+            })
+            .FinishNode()
+            .FinishNode()
+            .FinishNode();
+
+
+
+        BaseRoutine packBehavior = treeBuilder
+            .BeginSequence("move with pack")
+            .AddAction("Pack movement", () =>
+             {
+                 Debug.Log("Called pack movement");
+                 return RoutineState.Succeded;
+             })
+             .FinishNode();
 
 
         treeBuilder
             .BeginRepeater("Tree repeater", 0)
             .BeginSelector("Initial State Selector")
-            .BeginCondition("Non-Pack Behavior", () =>
+            .BeginCondition("Pack Behavior", () =>
             {
-                Debug.Log("Called non-pack Condition");
-                return !hasPack;
-            })
-            //.AttachTree(nonPackBehavior)
-            .FinishNode()
-            .BeginCondition("Pack Behvior", () =>
-            {
-                Debug.Log("Called pack Condition");
+              //  Debug.Log("Called pack Condition");
                 return hasPack;
             })
-            //.AttachTree(packBehavior)
+            .AttachTree(moveToTarget)
+            .FinishNode()
+            .BeginCondition("Non-Pack Behvaior", () =>
+            {
+             //   Debug.Log("Called Non-Pack Condition");
+                return !hasPack;
+            })
+            .AttachTree(needsBehavoir)
             .FinishNode()
             .FinishNode()
             .FinishNode();
