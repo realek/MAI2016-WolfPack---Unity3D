@@ -136,7 +136,7 @@ public class WolfAIController : MonoBehaviour {
              //   Debug.Log("Called Non-Pack Condition");
                 return !hasPack;
             })
-            //.AttachTree(needsBehavoir)
+            .AttachTree(needsBehavoir)
             .FinishNode()
             .FinishNode()
             .FinishNode();
