@@ -115,7 +115,7 @@ public class WolfAIController : MonoBehaviour {
             .BeginSequence("move with pack")
             .AddAction("Pack movement", () =>
              {
-                 Debug.Log("Called pack movement");
+                // Debug.Log("Called pack movement");
                  return RoutineState.Succeded;
              })
              .FinishNode();
@@ -126,14 +126,12 @@ public class WolfAIController : MonoBehaviour {
             .BeginSelector("Initial State Selector")
             .BeginCondition("Pack Behavior", () =>
             {
-              //  Debug.Log("Called pack Condition");
                 return hasPack;
             })
-            .AttachTree(moveToTarget) // pack behavior no implemented currently
+            .AttachTree(packBehavior) // pack behavior no implemented currently
             .FinishNode()
             .BeginCondition("Non-Pack Behvaior", () =>
             {
-             //   Debug.Log("Called Non-Pack Condition");
                 return !hasPack;
             })
             .AttachTree(needsBehavoir)

@@ -7,18 +7,6 @@ public class Elk : Animal {
     public float NormalSpeed = 1f; //running speed
     public int Bravery = 0; //sets how many wolves (and taunts by wolves) are needed to make it run away instead of standing its ground
     public float SpeedDrop = 0.5f; //how much speed it loses when running on the RoughTerrain area
-    private List<Elk> m_herd;
-    public bool inHerd
-    {
-        get
-        {
-            if (m_herd != null)
-                return m_herd.Count > 0;
-            else
-                return false;
-        }
-
-    }
     private bool wolvesAround;
     
 	void Start () {

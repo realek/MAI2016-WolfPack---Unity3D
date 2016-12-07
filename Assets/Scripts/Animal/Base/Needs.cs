@@ -40,7 +40,6 @@ public class Needs
         public float value;
         public float decayValue;
         public float threshold;
-        public int priority;
 
         /// <summary>
         /// returns true if the need value is below its theshold
