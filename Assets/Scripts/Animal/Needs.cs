@@ -28,8 +28,6 @@ public class Needs
         public float decayValue;
         public float decayRate;
         public float threshold;
-        [Tooltip("0 is highest priority.")]
-        public int priority;
     }
 
 

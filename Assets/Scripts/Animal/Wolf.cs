@@ -1,20 +1,26 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+public enum WolfPackRole
+{
+    None,
+    Alpha,
+    Beta,
+    Omega
+}
+
+
+
 public class Wolf : Animal {
 
-    [System.Serializable]
-    private sealed class WolfData
-    {
 
-    }
-
-
-    public Needs needs
+    [SerializeField]
+    private WolfPackRole m_packRole;
+    public WolfPackRole packRole
     {
         get
         {
-            return m_needs;
+            return m_packRole;
         }
     }
 
