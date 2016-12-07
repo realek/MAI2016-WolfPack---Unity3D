@@ -3,9 +3,6 @@ using System.Collections;
 
 public class Wolf : Animal {
 
-    [SerializeField]
-    private Needs m_needs;
-
     public Needs needs
     {
         get

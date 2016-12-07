@@ -17,7 +17,8 @@ public class Animal : MonoBehaviour {
     protected int m_currentHealth;
     [SerializeField]
     protected int m_maxHealth;
-
+    [SerializeField]
+    protected Needs m_needs;
     /// <summary>
     /// Sets current health to max health
     /// </summary>
