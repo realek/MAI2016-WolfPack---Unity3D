@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public class Selector : BaseComposite
 {
@@ -48,4 +49,10 @@ public class Selector : BaseComposite
             return m_state;
         }
     }
+
+    public override bool HasChildren()
+    {
+        return m_children != null && m_children.Count > 0;
+    }
+
 }

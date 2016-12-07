@@ -1,4 +1,6 @@
-﻿public class Repeater : BaseDecorator
+﻿using System;
+
+public class Repeater : BaseDecorator
 {
     /// <summary>
     /// number of times the child is reprocessed, 0 means infinite.
@@ -47,5 +49,10 @@
         }
 
         return m_state;
+    }
+
+    public override bool HasChildren()
+    {
+        return m_child != null;
     }
 }

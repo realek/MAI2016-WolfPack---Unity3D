@@ -51,4 +51,9 @@ public class Condition : BaseDecorator
 
 
     }
+
+    public override bool HasChildren()
+    {
+        return m_child != null;
+    }
 }

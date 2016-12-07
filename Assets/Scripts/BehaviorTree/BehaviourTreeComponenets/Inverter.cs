@@ -1,5 +1,8 @@
-﻿public class Inverter : BaseDecorator
+﻿using System;
+
+public class Inverter : BaseDecorator
 {
+
     public override RoutineState Tick()
     {
         if (m_child.State == RoutineState.Stopped)
@@ -21,5 +24,10 @@
         }
 
         return m_state;
+    }
+
+    public override bool HasChildren()
+    {
+        return m_child != null;
     }
 }

@@ -226,7 +226,10 @@ public class BehaviorTreeBuilder {
     /// <returns></returns>
     public BehaviorTreeBuilder FinishNode()
     {
-        m_currentRoutine = m_routineStack.Pop();
+        if (m_routineStack.Peek().HasChildren())
+            m_currentRoutine = m_routineStack.Pop();
+        else
+            throw new Exception("Unable to call Finish() on empty composite/decorator node, use the Add"+m_routineStack.Peek().GetType()+" method, if you do not wish to create children for the node");
         return this;
     }
 

@@ -3,6 +3,13 @@ using System.Collections;
 
 public class Wolf : Animal {
 
+    [System.Serializable]
+    private sealed class WolfData
+    {
+
+    }
+
+
     public Needs needs
     {
         get

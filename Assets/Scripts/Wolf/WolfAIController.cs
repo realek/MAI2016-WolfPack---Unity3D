@@ -12,13 +12,15 @@ public class WolfAIController : MonoBehaviour {
     [SerializeField]
     private AIMovementModule m_movementModule;
     public bool hasPack;
-    BaseRoutine behaviorTree;
+    private BaseRoutine m_behaviorTree;
     private Wolf m_wolf;
     public GameObject food;
     public GameObject drink;
     public GameObject sleepArea;
     public Wolf otherWolf;
     private GameObject currentTarget;
+
+
     BaseRoutine CreateBehaviorTree()
     {
 
@@ -134,7 +136,7 @@ public class WolfAIController : MonoBehaviour {
              //   Debug.Log("Called Non-Pack Condition");
                 return !hasPack;
             })
-            .AttachTree(needsBehavoir)
+            //.AttachTree(needsBehavoir)
             .FinishNode()
             .FinishNode()
             .FinishNode();
@@ -151,8 +153,12 @@ public class WolfAIController : MonoBehaviour {
         m_wolf = GetComponent<Wolf>();
         m_detectionModule.Initialize(this);
         m_movementModule.Initialize(this);
-        behaviorTree = CreateBehaviorTree();
-        behaviorTree.Start();
+        m_behaviorTree = CreateBehaviorTree();
+        if (m_behaviorTree == null)
+        {
+            return;
+        }
+        m_behaviorTree.Start();
     }
 
     private void OnEnable()
@@ -164,7 +170,12 @@ public class WolfAIController : MonoBehaviour {
     // Update is called once per frame
     private void Update()
     {
-        behaviorTree.Tick();
+        if (m_behaviorTree == null)
+        {
+            enabled = false;
+            return;
+        }
+        m_behaviorTree.Tick();
     }
 
     private void OnDisable()
