@@ -118,7 +118,7 @@ public class WolfAIController : MonoBehaviour {
             .FinishNode();
 
         //Patrol behavior
-        BaseRoutine patrolBehaviorBlock_containerSequence = treeBuilder
+        BaseRoutine patrolBehaviorBlock_SequenceContainer = treeBuilder
             .BeginSequence("Patrol Sequence")
             .AddAction("Select Waypoint", () => 
             {
@@ -136,6 +136,11 @@ public class WolfAIController : MonoBehaviour {
                 return RoutineState.Succeded;
             })
             .FinishNode();
+        
+        //Protect behavior
+        BaseRoutine protectBehaviorBlock_SelectorContainer = treeBuilder
+            .BeginSelector("Defend Target From")
+            .FinishNode();
 
         //Solo behavior container
         BaseRoutine soloBehaviorBlock_SelectorContainer = treeBuilder
@@ -144,7 +149,7 @@ public class WolfAIController : MonoBehaviour {
             .AttachTree(needsBlock_SelectorContainer)
             .FinishNode()
             .BeginCondition("On Patrol", () => { return onPatrol; })
-            .AttachTree(patrolBehaviorBlock_containerSequence)
+            .AttachTree(patrolBehaviorBlock_SequenceContainer)
             .FinishNode()
             .FinishNode();
 
