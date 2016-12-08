@@ -23,7 +23,7 @@ public class WolfAIController : MonoBehaviour {
     public int currentPatrolPointIDX = -1;
     private GameObject m_currentTarget;
 
-    private const float BEHAVIOR_TREE_UPDATE_RATE = 0.15f; // 6 times a second is enough
+    private const float BEHAVIOR_TREE_UPDATE_RATE = 0.2f; // 5 times a second is enough
     private WaitForSeconds m_behaviorTreeTick;
     private Coroutine treeRunner;
     BaseRoutine CreateBehaviorTree()
@@ -32,9 +32,9 @@ public class WolfAIController : MonoBehaviour {
         BehaviorTreeBuilder treeBuilder = new BehaviorTreeBuilder();
 
 
-        BaseRoutine moveToTarget = treeBuilder
-    .BeginSequence("Move Towards")
-    .AddAction("move to current target", () =>
+        BaseRoutine moveToTarget_SequenceContainer = treeBuilder
+    .BeginSequence("Move TO")
+    .AddAction("Movement", () =>
     {
         if (m_currentTarget == null || m_currentTarget == gameObject)
             return RoutineState.Failed;
@@ -49,7 +49,7 @@ public class WolfAIController : MonoBehaviour {
     })
     .FinishNode();
 
-
+        //Needs behavior container
         BaseRoutine needsBlock_SelectorContainer = treeBuilder
             .BeginSelector("Needs Selection")
             .BeginCondition("Energy", () =>
@@ -62,7 +62,7 @@ public class WolfAIController : MonoBehaviour {
                 else return false;
             })
             .BeginSequence("Go Rest")
-            .AttachTree(moveToTarget)
+            .AttachTree(moveToTarget_SequenceContainer)
             .AddAction("Rest", () =>
             {
                 Debug.Log("Rested");
@@ -83,7 +83,7 @@ public class WolfAIController : MonoBehaviour {
                 else return false;
             })
             .BeginSequence("Go Eat")
-            .AttachTree(moveToTarget)
+            .AttachTree(moveToTarget_SequenceContainer)
             .AddAction("Eat", () =>
             {
                 Debug.Log("Feast");
@@ -104,7 +104,7 @@ public class WolfAIController : MonoBehaviour {
                 else return false;
             })
             .BeginSequence("Go Drink")
-            .AttachTree(moveToTarget)
+            .AttachTree(moveToTarget_SequenceContainer)
             .AddAction("Drink", () =>
             {
                 Debug.Log("Drink");
@@ -117,7 +117,8 @@ public class WolfAIController : MonoBehaviour {
             .FinishNode()
             .FinishNode();
 
-        BaseRoutine patrolBehavior_containerSequence = treeBuilder
+        //Patrol behavior
+        BaseRoutine patrolBehaviorBlock_containerSequence = treeBuilder
             .BeginSequence("Patrol Sequence")
             .AddAction("Select Waypoint", () => 
             {
@@ -126,7 +127,7 @@ public class WolfAIController : MonoBehaviour {
                 m_currentTarget = patrolPoints[currentPatrolPointIDX];
                 return RoutineState.Succeded;
             })
-            .AttachTree(moveToTarget)
+            .AttachTree(moveToTarget_SequenceContainer)
             .AddAction("Next Waypoint",()=>
             {
                 currentPatrolPointIDX++;
@@ -136,18 +137,19 @@ public class WolfAIController : MonoBehaviour {
             })
             .FinishNode();
 
-        BaseRoutine soloBehavior_SelectorContainer = treeBuilder
+        //Solo behavior container
+        BaseRoutine soloBehaviorBlock_SelectorContainer = treeBuilder
             .BeginSelector("Solo behavior")
             .BeginCondition("Has Needs", () => { return m_wolf.needs.InNeed(); })
             .AttachTree(needsBlock_SelectorContainer)
             .FinishNode()
             .BeginCondition("On Patrol", () => { return onPatrol; })
-            .AttachTree(patrolBehavior_containerSequence)
+            .AttachTree(patrolBehaviorBlock_containerSequence)
             .FinishNode()
             .FinishNode();
 
-
-        BaseRoutine packBehavior = treeBuilder
+        //Pack behavior container
+        BaseRoutine packBehaviorBlock_SequenceContainer = treeBuilder
             .BeginSequence("move with pack")
             .AddAction("Pack movement", () =>
              {
@@ -156,7 +158,7 @@ public class WolfAIController : MonoBehaviour {
              })
              .FinishNode();
 
-        //return final behavior tree
+        //return final behavior tree by adding pack and non-pack behaviors
         treeBuilder
             .BeginRepeater("Tree repeater", 0)
             .BeginSelector("Initial State Selector")
@@ -164,13 +166,13 @@ public class WolfAIController : MonoBehaviour {
             {
                 return hasPack;
             })
-            .AttachTree(packBehavior) // pack behavior no implemented currently
+            .AttachTree(packBehaviorBlock_SequenceContainer) // pack behavior not implemented currently
             .FinishNode()
             .BeginCondition("Non-Pack Behvaior", () =>
             {
                 return !hasPack;
             })
-            .AttachTree(soloBehavior_SelectorContainer)
+            .AttachTree(soloBehaviorBlock_SelectorContainer)
             .FinishNode()
             .FinishNode()
             .FinishNode();
