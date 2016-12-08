@@ -119,6 +119,21 @@ public class Needs
      
     }
 
+    /// <summary>
+    /// Is any of the needs being triggered at the current time
+    /// </summary>
+    /// <returns></returns>
+    public bool InNeed()
+    {
+        int count = (int)NeedType.NEED_COUNT;
+        for (int i = 0; i < count; i++)
+        {
+            if (IsNeedTriggered((NeedType)i))
+                return true;
+        }
+        return false;
+    }
+
     public void Shutdown()
     {
         if (m_executor != null)

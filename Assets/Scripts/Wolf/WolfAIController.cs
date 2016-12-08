@@ -12,13 +12,16 @@ public class WolfAIController : MonoBehaviour {
     [SerializeField]
     private AIMovementModule m_movementModule;
     public bool hasPack;
+    public bool onPatrol;
     private BaseRoutine m_behaviorTree;
     private Wolf m_wolf;
     public GameObject food;
     public GameObject drink;
     public GameObject sleepArea;
     public Wolf otherWolf;
-    private GameObject currentTarget;
+    public GameObject[] patrolPoints;
+    public int currentPatrolPointIDX = -1;
+    private GameObject m_currentTarget;
 
 
     BaseRoutine CreateBehaviorTree()
@@ -31,10 +34,10 @@ public class WolfAIController : MonoBehaviour {
     .BeginSequence("Move Towards")
     .AddAction("move to current target", () =>
     {
-        if (currentTarget == null)
+        if (m_currentTarget == null || m_currentTarget == gameObject)
             return RoutineState.Failed;
 
-        m_movementModule.Move(currentTarget);
+        m_movementModule.Move(m_currentTarget);
         if (m_movementModule.reachedTarget && !m_movementModule.unreachableTarget)
             return RoutineState.Succeded;
         else if (!m_movementModule.reachedTarget && !m_movementModule.unreachableTarget)
@@ -45,13 +48,13 @@ public class WolfAIController : MonoBehaviour {
     .FinishNode();
 
 
-        BaseRoutine needsBehavoir = treeBuilder
+        BaseRoutine needsBlock_SelectorContainer = treeBuilder
             .BeginSelector("Needs Selection")
             .BeginCondition("Energy", () =>
             {
                 if (m_wolf.needs.IsNeedTriggered(NeedType.Energy))
                 {
-                    currentTarget = sleepArea;
+                    m_currentTarget = sleepArea;
                     return true;
                 }
                 else return false;
@@ -61,6 +64,7 @@ public class WolfAIController : MonoBehaviour {
             .AddAction("Rest", () =>
             {
                 Debug.Log("Rested");
+                m_currentTarget = gameObject;
                 m_wolf.needs.SetNeed(NeedType.Energy, 100);
                 return RoutineState.Succeded;
 
@@ -71,7 +75,7 @@ public class WolfAIController : MonoBehaviour {
             {
                 if (m_wolf.needs.IsNeedTriggered(NeedType.Hunger))
                 {
-                    currentTarget = food;
+                    m_currentTarget = food;
                     return true;
                 }
                 else return false;
@@ -81,6 +85,7 @@ public class WolfAIController : MonoBehaviour {
             .AddAction("Eat", () =>
             {
                 Debug.Log("Feast");
+                m_currentTarget = gameObject;
                 m_wolf.needs.SetNeed(NeedType.Hunger, 100);
                 return RoutineState.Succeded;
 
@@ -91,7 +96,7 @@ public class WolfAIController : MonoBehaviour {
             {
                 if (m_wolf.needs.IsNeedTriggered(NeedType.Thirst))
                 {
-                    currentTarget = drink;
+                    m_currentTarget = drink;
                     return true;
                 }
                 else return false;
@@ -101,6 +106,7 @@ public class WolfAIController : MonoBehaviour {
             .AddAction("Drink", () =>
             {
                 Debug.Log("Drink");
+                m_currentTarget = gameObject;
                 m_wolf.needs.SetNeed(NeedType.Thirst, 100);
                 return RoutineState.Succeded;
 
@@ -109,6 +115,34 @@ public class WolfAIController : MonoBehaviour {
             .FinishNode()
             .FinishNode();
 
+        BaseRoutine patrolBehavior_containerSequence = treeBuilder
+            .BeginSequence("Patrol Sequence")
+            .AddAction("Select Waypoint", () => 
+            {
+                if (currentPatrolPointIDX == -1)
+                    return RoutineState.Failed;
+                m_currentTarget = patrolPoints[currentPatrolPointIDX];
+                return RoutineState.Succeded;
+            })
+            .AttachTree(moveToTarget)
+            .AddAction("Next Waypoint",()=>
+            {
+                currentPatrolPointIDX++;
+                if (currentPatrolPointIDX == patrolPoints.Length)
+                    currentPatrolPointIDX = -1;
+                return RoutineState.Succeded;
+            })
+            .FinishNode();
+
+        BaseRoutine soloBehavior_SelectorContainer = treeBuilder
+            .BeginSelector("Solo behavior")
+            .BeginCondition("Has Needs", () => { return m_wolf.needs.InNeed(); })
+            .AttachTree(needsBlock_SelectorContainer)
+            .FinishNode()
+            .BeginCondition("On Patrol", () => { return onPatrol; })
+            .AttachTree(patrolBehavior_containerSequence)
+            .FinishNode()
+            .FinishNode();
 
 
         BaseRoutine packBehavior = treeBuilder
@@ -120,7 +154,7 @@ public class WolfAIController : MonoBehaviour {
              })
              .FinishNode();
 
-
+        //return final behavior tree
         treeBuilder
             .BeginRepeater("Tree repeater", 0)
             .BeginSelector("Initial State Selector")
@@ -134,7 +168,7 @@ public class WolfAIController : MonoBehaviour {
             {
                 return !hasPack;
             })
-            .AttachTree(needsBehavoir)
+            .AttachTree(soloBehavior_SelectorContainer)
             .FinishNode()
             .FinishNode()
             .FinishNode();
@@ -148,6 +182,7 @@ public class WolfAIController : MonoBehaviour {
     // Use this for initialization
     private void Start () {
 
+        m_currentTarget = gameObject;
         m_wolf = GetComponent<Wolf>();
         m_detectionModule.Initialize(this);
         m_movementModule.Initialize(this);
