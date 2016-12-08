@@ -32,4 +32,13 @@ public class AnimalGroup {
     {
         return m_members.Contains(animal);
     }
+
+    public Animal GetMember(int index) {
+        if (m_members[index]) return m_members[index];
+        return null;
+    }
+
+    public int GetSize() {
+        return m_members.Count;
+    }
 }

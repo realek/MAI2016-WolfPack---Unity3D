@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public enum AnimalGender
 {
@@ -21,8 +20,6 @@ public enum AnimalStrength
     Medium,
     Strong,
     VeryStrong
-
-
 }
 
 public class Animal : MonoBehaviour {
@@ -30,7 +27,7 @@ public class Animal : MonoBehaviour {
 
 
     [SerializeField]
-    private AnimalGender m_gender;
+    protected AnimalGender m_gender;
     public AnimalGender gender
     {
         get
@@ -39,7 +36,7 @@ public class Animal : MonoBehaviour {
         }
     }
     [SerializeField]
-    private AnimalAge m_age;
+    protected AnimalAge m_age;
     public AnimalAge age
     {
         get
@@ -48,7 +45,7 @@ public class Animal : MonoBehaviour {
         }
     }
     [SerializeField]
-    private AnimalStrength m_strength;
+    protected AnimalStrength m_strength;
     public AnimalStrength strength
     {
         get

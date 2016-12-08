@@ -109,6 +109,9 @@ public class WolfAIController : MonoBehaviour {
             {
                 Debug.Log("Drink");
                 m_currentTarget = gameObject;
+                //check if object still exists because it might have expired
+                //if (m_currentTarget.tag = "Water") Perishable.Take(5); //don't call if tag is BigWater (non-perishable)
+                //m_wolf.needs.ModNeed(NeedType.Thirst, 5);
                 m_wolf.needs.SetNeed(NeedType.Thirst, 100);
                 return RoutineState.Succeded;
 
@@ -137,10 +140,10 @@ public class WolfAIController : MonoBehaviour {
             })
             .FinishNode();
         
-        //Protect behavior
-        BaseRoutine protectBehaviorBlock_SelectorContainer = treeBuilder
-            .BeginSelector("Defend Target From")
-            .FinishNode();
+        ////Protect behavior
+        //BaseRoutine protectBehaviorBlock_SelectorContainer = treeBuilder
+        //    .BeginSelector("Defend Target From")
+        //    .FinishNode();
 
         //Solo behavior container
         BaseRoutine soloBehaviorBlock_SelectorContainer = treeBuilder
@@ -213,7 +216,7 @@ public class WolfAIController : MonoBehaviour {
     IEnumerator BehaviorTreeRunner()
     {
         if (m_behaviorTree == null)
-            yield return null;
+            yield break;
         m_behaviorTree.Start();
         while (true)
         {
