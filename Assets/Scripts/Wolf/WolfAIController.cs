@@ -23,7 +23,9 @@ public class WolfAIController : MonoBehaviour {
     public int currentPatrolPointIDX = -1;
     private GameObject m_currentTarget;
 
-
+    private const float BEHAVIOR_TREE_UPDATE_RATE = 0.15f; // 6 times a second is enough
+    private WaitForSeconds m_behaviorTreeTick;
+    private Coroutine treeRunner;
     BaseRoutine CreateBehaviorTree()
     {
 
@@ -182,39 +184,42 @@ public class WolfAIController : MonoBehaviour {
     // Use this for initialization
     private void Start () {
 
+        m_behaviorTreeTick = new WaitForSeconds(BEHAVIOR_TREE_UPDATE_RATE);
         m_currentTarget = gameObject;
         m_wolf = GetComponent<Wolf>();
         m_detectionModule.Initialize(this);
         m_movementModule.Initialize(this);
         m_behaviorTree = CreateBehaviorTree();
-        if (m_behaviorTree == null)
-        {
-            return;
-        }
-        m_behaviorTree.Start();
+        treeRunner = StartCoroutine(BehaviorTreeRunner());
+
+
     }
 
     private void OnEnable()
     {
         m_detectionModule.Initialize(this);
         m_movementModule.Initialize(this);
+        if(treeRunner==null)
+            treeRunner = StartCoroutine(BehaviorTreeRunner());
     }
 
-    // Update is called once per frame
-    private void Update()
+    IEnumerator BehaviorTreeRunner()
     {
         if (m_behaviorTree == null)
+            yield return null;
+        m_behaviorTree.Start();
+        while (true)
         {
-            enabled = false;
-            return;
+            m_behaviorTree.Tick();
+            yield return m_behaviorTreeTick;
         }
-        m_behaviorTree.Tick();
     }
 
     private void OnDisable()
     {
         m_detectionModule.Shutdown();
         m_movementModule.Shutdown();
+        treeRunner = null;
     }
 
     void OnDrawGizmosSelected()
