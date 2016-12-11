@@ -83,6 +83,14 @@ public class Animal : MonoBehaviour {
         m_currentHealth = m_maxHealth;
     }
 
-
+    public void DealtDmg(int dmg) {
+        m_currentHealth -= dmg;
+        Debug.Log("Hit! Curr health: " + m_currentHealth);
+        if (m_currentHealth < 1) {
+            GameObject myCarcass = (GameObject) Instantiate((Resources.Load("Carcass")));
+            myCarcass.transform.position = transform.position + Vector3.up * 0.1f;
+            Destroy(gameObject);
+        }
+    }
 
 }

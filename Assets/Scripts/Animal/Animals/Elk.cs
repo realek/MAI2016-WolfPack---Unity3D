@@ -10,6 +10,11 @@ public class Elk : NonWolf {
 
     private bool closeToOthers;
     private AnimalGroup m_group;
+    private int atkDmg;
+    private int dmg1 = 0;
+    private int dmg2 = 2;
+    private int dmg3 = 6;
+    private int dmg4 = 4;
 
     void Start () {
         InitValues();
@@ -56,7 +61,7 @@ public class Elk : NonWolf {
                     .BeginCondition("Should I move around", () => (Random.value > 0.5f))
                         .BeginSequence("Move around")
                             .AddAction("Select random location", () => {
-                                //set a random nearby Vector3 as target
+                                //TODO set a random nearby Vector3 as target
                                 return RoutineState.Succeded;
                             })
                             .AttachTree(moveToTarget_SequenceContainer)
@@ -68,21 +73,56 @@ public class Elk : NonWolf {
         BaseRoutine runAway_SequenceContainer = treeBuilder
             .BeginSequence("Run away from wolves")
                 .AddAction("Choose run direction", () => {
-                    //set target in the opposite direction of the wolves
+                    //TODO set target in the opposite direction of the wolves
                     return RoutineState.Succeded;
                 })
                 .AttachTree(moveToTarget_SequenceContainer)
             .FinishNode();
 
+        //deal damage
+        BaseRoutine attack_SequenceContainer = treeBuilder
+            .BeginSequence("Run away from wolves")
+                .AddAction("Animate and deal damage", () => {
+                    //TODO add animator animation
+                    if (m_currentTarget == null || m_currentTarget == gameObject || m_currentTarget.GetComponent<Animal>() == null)
+                        return RoutineState.Failed;
+                    switch (m_age) {
+                            case AnimalAge.YoungAdult:
+                            atkDmg = dmg2;
+                            break;
+                            case AnimalAge.Adult:
+                            atkDmg = dmg3;
+                            break;
+                            case AnimalAge.Elder:
+                            atkDmg = dmg4;
+                            break;
+                        default:
+                            atkDmg = dmg1;
+                            break;
+                    }
+                    m_currentTarget.GetComponent<Animal>().DealtDmg(atkDmg + Bravery * 2);
+                    return RoutineState.Succeded;
+                })
+                .AddAction("Cooldown", () => {
+                    //TODO: wait animation time to finish
+                    float atkLag;
+                    if (m_currentHealth > 30) atkLag = 2;
+                    else atkLag = 5;
+                    //TODO: wait atkLag time
+                    return RoutineState.Succeded;
+                })
+            .FinishNode();
+
         //fight behavior
         BaseRoutine fight_SequenceContainer = treeBuilder
-            //damage dependent on age & increased if bravery not 0,
-            //frequency of attacks dependent on health, choice of target dependent on wolf health
+            //TODO choose lowest health target
+            .AttachTree(moveToTarget_SequenceContainer)
+            .AttachTree(attack_SequenceContainer)
             .AddAction("Win", () => RoutineState.Succeded);
 
         //stay behavior
         BaseRoutine stayAndWait_SequenceContainer = treeBuilder
-            //stay and wait
+            //TODO: stay and wait
             .AddAction("Wait", () => RoutineState.Succeded);
 
         //attacked and alone behavior
@@ -91,13 +131,13 @@ public class Elk : NonWolf {
                 .BeginCondition("none", () => (Bravery == 0))
                     .BeginSelector("Fight or flight")
                         .BeginCondition("Are the wolves too many", () => {
-                            //count attacking wolves
+                            //TODO count attacking wolves
                             //for Elk if (count > 2)
                             return true;
                         })
                             .BeginSelector("Can I run away")
                                 .BeginCondition("Do I have energy left", () => {
-                                    //if energy > 10
+                                    //TODO if energy > 10
                                     return true;
                                 })
                                     .AttachTree(runAway_SequenceContainer)
@@ -127,7 +167,7 @@ public class Elk : NonWolf {
                                 .BeginCondition("Have the others ran away", () => !closeToOthers)
                                     .AttachTree(returnToGroup_SequenceContainer)
                                 .FinishNode()
-                                //else stay in the same place
+                                .AttachTree(stayAndWait_SequenceContainer) //else stay in the same place
                             .FinishNode()
                         .FinishNode()
                         .AttachTree(attackedIndividual_SelectorContainer)
