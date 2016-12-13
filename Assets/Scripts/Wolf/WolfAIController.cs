@@ -4,7 +4,9 @@ using System.Collections.Generic;
 
 [RequireComponent(typeof(Wolf))]
 public class WolfAIController : MonoBehaviour {
-    
+
+
+
     [SerializeField]
     private AIDetectionModule m_detectionModule;
     [SerializeField]
