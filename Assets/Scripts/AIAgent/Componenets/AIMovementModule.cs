@@ -2,6 +2,7 @@
 using System.Collections;
 using System;
 using UnityEngine.Events;
+using UnityEngine.AI;
 
 public enum AIStoppingDistance
 {

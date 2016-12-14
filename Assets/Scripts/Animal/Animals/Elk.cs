@@ -44,9 +44,9 @@ public class Elk : NonWolf {
         BaseRoutine returnToGroup_SequenceContainer = treeBuilder
             .BeginSequence("Return to group")
                 .AddAction("Select elk location", () => {
-                    m_currentTarget = (m_group.GetMember(0) != gameObject)
-                        ? m_group.GetMember(0).gameObject
-                        : m_group.GetMember(1).gameObject;
+                    //m_currentTarget = (m_group.GetClosestMember(0) != gameObject)
+                    //    ? m_group.GetClosestMember(0).gameObject
+                    //    : m_group.GetClosestMember(1).gameObject;
                     return RoutineState.Succeded;
                 })
                 .AttachTree(moveToTarget_SequenceContainer)
@@ -161,7 +161,7 @@ public class Elk : NonWolf {
                     .BeginSelector("Stay or flee group")
                         .BeginCondition("Am I unharmed", () => (m_currentHealth > 79))
                             .BeginSelector("Run away with group")
-                                .BeginCondition("Am I member 0 of my group", () => (m_group.GetMember(0) == gameObject))
+                          //      .BeginCondition("Am I member 0 of my group", () => (m_group.GetClosestMember(0) == gameObject))
                                     .AttachTree(runAway_SequenceContainer)    
                                 .FinishNode()
                                 .BeginCondition("Have the others ran away", () => !closeToOthers)

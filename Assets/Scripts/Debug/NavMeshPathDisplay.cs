@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-
+using UnityEngine.AI;
 
 /// <summary>
 /// Helper class to display NavMesh Agent path
