@@ -5,16 +5,32 @@ using System.Collections.Generic;
 public class AnimalGroup {
 
     public string name;
+    protected int groupID;
     protected List<Animal> m_members;
     public AnimalGroup()
     {
         m_members = new List<Animal>();
+        var bytes = System.Guid.NewGuid().ToByteArray();
+        groupID = 0;
+        for (int i = 0; i < bytes.Length; i++)
+            groupID += bytes[i];
+
+    }
+
+    public int GUIDGroupID
+    {
+        get
+        {
+            return groupID;
+        }
     }
 
     public void AddMember(Animal animal)
     {
         if (!m_members.Contains(animal))
+        {
             m_members.Add(animal);
+        }
         else
             Debug.Log("Animal already part of group");
     }
@@ -25,6 +41,9 @@ public class AnimalGroup {
             m_members.Remove(animal);
         else
             Debug.Log("Animal not part of the group " + name);
+
+        if (m_members.Count == 0)
+            AnimalGroupManager.Instance.UnRegisterGroup(this);
     }
 
     public bool IsMember(Animal animal)

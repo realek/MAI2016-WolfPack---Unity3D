@@ -25,7 +25,7 @@ public enum AnimalStrength
 public class Animal : MonoBehaviour {
 
 
-
+    protected AnimalGroup currentGroup = null;
     [SerializeField]
     protected AnimalGender m_gender;
     public AnimalGender gender
@@ -93,4 +93,16 @@ public class Animal : MonoBehaviour {
         }
     }
 
+    public void SetGroup(AnimalGroup group)
+    {
+        currentGroup = group;
+        currentGroup.AddMember(this);
+    }
+
+    public void LeaveGroup()
+    {
+        currentGroup.RemoveMember(this);
+        currentGroup = null;
+        
+    }
 }
