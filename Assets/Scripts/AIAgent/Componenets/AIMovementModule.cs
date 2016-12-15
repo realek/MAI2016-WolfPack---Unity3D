@@ -52,6 +52,8 @@ public class AIMovementModule : AIModule
     private bool m_targetReached;
     [SerializeField]
     private bool m_failed;
+
+    private Collider m_targetCol;
     public GameObject target
     {
         get
@@ -135,9 +137,8 @@ public class AIMovementModule : AIModule
 
     protected IEnumerator ModuleLogic()
     {
-        bool colCheck = false;
         NavMeshPath currentPath = new NavMeshPath();
-        Collider gameObjCol = null;
+       // Collider gameObjCol = null;
         Vector3 oldTargetPosition = m_owner.transform.position;
         Vector3 cTargetPosition = m_owner.transform.position;
         m_targetReached = false;
@@ -160,21 +161,13 @@ public class AIMovementModule : AIModule
             {
                 cTargetPosition = m_target.transform.position;
                 //check if target has a collider
-                if (gameObjCol == null && !colCheck || gameObjCol != null &&
-                    gameObjCol.gameObject.GetInstanceID() != m_target.GetInstanceID())
-                {
-                    colCheck = true;
-                    gameObjCol = m_target.GetComponent<Collider>();
-                    cTargetPosition = gameObjCol.ClosestPointOnBounds(m_owner.transform.position);
-                }
+                if(m_targetCol!=null)
+                    cTargetPosition = m_targetCol.ClosestPointOnBounds(m_owner.transform.position);
 
                 //if distance threshold is exceeded recompute path
                 if ((cTargetPosition - oldTargetPosition).sqrMagnitude > m_targetPositionDiff * m_targetPositionDiff)
                 {
-                    if (gameObjCol != null)
-                        oldTargetPosition = gameObjCol.ClosestPointOnBounds(m_owner.transform.position);
-                    else
-                        oldTargetPosition = m_target.transform.position;
+                    oldTargetPosition = cTargetPosition;
 
                     if (m_navAgent.CalculatePath(oldTargetPosition, currentPath))
                         m_navAgent.SetPath(currentPath);
@@ -201,26 +194,56 @@ public class AIMovementModule : AIModule
     public bool Move(GameObject target)
     {
 
-        if (target == null || (m_target == target && (m_target.transform.position - m_navAgent.transform.position).sqrMagnitude
-    <= m_navAgent.stoppingDistance))
+        if (target == null)
             return false;
 
-        if (m_isInactive || m_moduleExecutor==null)
+
+        if (m_isInactive || m_moduleExecutor == null)
         {
-            m_target = target;
             m_targetReached = false;
             m_failed = false;
+            m_isInactive = false;
+            if (m_target != target)
+            {
+                m_target = target;
+                m_targetCol = m_target.GetComponent<Collider>();
+            }
             m_moduleExecutor = m_owner.StartCoroutine(ModuleLogic());
             return true;
         }
 
-        if (m_target != target && (target.transform.position - m_navAgent.transform.position).sqrMagnitude
-    > m_navAgent.stoppingDistance)
+        if (m_target == target)
         {
-            m_targetReached = false;
-            m_failed = false;
+            if (m_targetCol == null && (m_target.transform.position - m_navAgent.transform.position).sqrMagnitude
+                <= m_navAgent.stoppingDistance)
+                return false;
+
+            if (m_targetCol != null && m_targetCol && (m_targetCol.ClosestPointOnBounds(m_navAgent.transform.position) 
+                - m_navAgent.transform.position).sqrMagnitude<= m_navAgent.stoppingDistance)
+                return false;
+        }
+
+        if(m_target != target)
+        {
             m_target = target;
-            return true;
+            m_targetCol = m_target.GetComponent<Collider>();
+            if (m_targetCol == null && (target.transform.position - m_navAgent.transform.position).sqrMagnitude
+                > m_navAgent.stoppingDistance)
+            {
+                m_targetReached = false;
+                m_failed = false;
+                m_target = target;
+                return true;
+            }
+
+            if(m_targetCol!=null && (m_targetCol.ClosestPointOnBounds(m_navAgent.transform.position)
+                - m_navAgent.transform.position).sqrMagnitude > m_navAgent.stoppingDistance)
+            {
+                m_targetReached = false;
+                m_failed = false;
+                m_target = target;
+                return true;
+            }
         }
 
         return false;
