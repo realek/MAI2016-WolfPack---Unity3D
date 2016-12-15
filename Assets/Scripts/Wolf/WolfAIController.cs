@@ -12,7 +12,6 @@ public class WolfAIController : MonoBehaviour {
     [SerializeField]
     private AIMovementModule m_movementModule;
     public bool hasPack;
-    public bool onPatrol;
     private BaseRoutine m_behaviorTree;
     private Wolf m_wolf;
     public GameObject food;
@@ -20,9 +19,12 @@ public class WolfAIController : MonoBehaviour {
     public GameObject sleepArea;
     public Wolf otherWolf;
     public GameObject[] patrolPoints;
-    public int currentPatrolPointIDX = -1;
+    private int currentPatrolPointIDX = -1;
     private GameObject m_currentTarget;
+    private bool m_onPatrol = false;
 
+    private const float WANDER_CHANCE = 0.35f;
+    private const float PATROL_CHANCE = 0.25f;
     private const float BEHAVIOR_TREE_UPDATE_RATE = 0.2f; // 5 times a second is enough
     private WaitForSeconds m_behaviorTreeTick;
     private Coroutine treeRunner;
@@ -135,7 +137,10 @@ public class WolfAIController : MonoBehaviour {
             {
                 currentPatrolPointIDX++;
                 if (currentPatrolPointIDX == patrolPoints.Length)
+                {
                     currentPatrolPointIDX = -1;
+                    m_onPatrol = false;
+                }
                 return RoutineState.Succeded;
             })
             .FinishNode();
@@ -151,7 +156,17 @@ public class WolfAIController : MonoBehaviour {
             .BeginCondition("Has Needs", () => { return m_wolf.needs.InNeed(); })
             .AttachTree(needsBlock_SelectorContainer)
             .FinishNode()
-            .BeginCondition("On Patrol", () => { return onPatrol; })
+            .BeginCondition("On Patrol", () => 
+            {
+                if (m_onPatrol)
+                    return true;
+                if (PATROL_CHANCE >= Random.value)
+                {
+                    currentPatrolPointIDX = 0;
+                    return true;
+                }
+                return false;
+            })
             .AttachTree(patrolBehaviorBlock_SequenceContainer)
             .FinishNode()
             .FinishNode();

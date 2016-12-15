@@ -14,8 +14,8 @@ public enum NeedType
 [System.Serializable]
 public class Needs
 {
-    private const int MIN_NEED_VALUE = 0;
-    private const int MAX_NEED_VALUE = 100;
+    public const int MIN_NEED_VALUE = 0;
+    public const int MAX_NEED_VALUE = 100;
     /// <summary>
     /// Inner struct used to describe needs
     /// </summary>
@@ -71,6 +71,13 @@ public class Needs
     private MonoBehaviour m_owner;
     private Coroutine m_executor;
     private bool m_init;
+    public bool Initialized
+    {
+        get
+        {
+            return m_init;
+        }
+    }
     private WaitForSeconds m_minDecayYield;
     private float m_minDecayRate;
     /// <summary>

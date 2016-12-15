@@ -139,6 +139,7 @@ public class AIMovementModule : AIModule
         NavMeshPath currentPath = new NavMeshPath();
         Collider gameObjCol = null;
         Vector3 oldTargetPosition = m_owner.transform.position;
+        Vector3 cTargetPosition = m_owner.transform.position;
         m_targetReached = false;
         float inactivityCounter = m_inactivityTime; 
 
@@ -157,16 +158,18 @@ public class AIMovementModule : AIModule
 
             if (!m_targetReached && !m_failed)
             {
+                cTargetPosition = m_target.transform.position;
                 //check if target has a collider
                 if (gameObjCol == null && !colCheck || gameObjCol != null &&
                     gameObjCol.gameObject.GetInstanceID() != m_target.GetInstanceID())
                 {
                     colCheck = true;
                     gameObjCol = m_target.GetComponent<Collider>();
+                    cTargetPosition = gameObjCol.ClosestPointOnBounds(m_owner.transform.position);
                 }
 
                 //if distance threshold is exceeded recompute path
-                if ((m_target.transform.position - oldTargetPosition).sqrMagnitude > m_targetPositionDiff * m_targetPositionDiff)
+                if ((cTargetPosition - oldTargetPosition).sqrMagnitude > m_targetPositionDiff * m_targetPositionDiff)
                 {
                     if (gameObjCol != null)
                         oldTargetPosition = gameObjCol.ClosestPointOnBounds(m_owner.transform.position);
