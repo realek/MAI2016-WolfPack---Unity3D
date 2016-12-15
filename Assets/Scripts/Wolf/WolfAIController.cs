@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.AI;
 
 [RequireComponent(typeof(Wolf))]
 public class WolfAIController : MonoBehaviour {
@@ -21,10 +22,11 @@ public class WolfAIController : MonoBehaviour {
     public GameObject[] patrolPoints;
     private int currentPatrolPointIDX = -1;
     private GameObject m_currentTarget;
+    private GameObject m_wanderPoint;
     private bool m_onPatrol = false;
-
+    private bool m_wandering = false;
     private const float WANDER_CHANCE = 0.35f;
-    private const float PATROL_CHANCE = 0.25f;
+    private const float PATROL_CHANCE = 0.15f;
     private const float BEHAVIOR_TREE_UPDATE_RATE = 0.2f; // 5 times a second is enough
     private WaitForSeconds m_behaviorTreeTick;
     private Coroutine treeRunner;
@@ -125,7 +127,7 @@ public class WolfAIController : MonoBehaviour {
         //Patrol behavior
         BaseRoutine patrolBehaviorBlock_SequenceContainer = treeBuilder
             .BeginSequence("Patrol Sequence")
-            .AddAction("Select Waypoint", () => 
+            .AddAction("Select Waypoint", () =>
             {
                 if (currentPatrolPointIDX == -1)
                     return RoutineState.Failed;
@@ -133,18 +135,42 @@ public class WolfAIController : MonoBehaviour {
                 return RoutineState.Succeded;
             })
             .AttachTree(moveToTarget_SequenceContainer)
-            .AddAction("Next Waypoint",()=>
+            .AddAction("Next Waypoint", () =>
+             {
+                 currentPatrolPointIDX++;
+                 if (currentPatrolPointIDX == patrolPoints.Length)
+                 {
+                     currentPatrolPointIDX = -1;
+                     m_onPatrol = false;
+                 }
+                 return RoutineState.Succeded;
+             })
+            .FinishNode();
+
+        //wander behavior
+        BaseRoutine wanderBehavioir_SequenceContainer = treeBuilder
+            .BeginSequence("Wander Sequence")
+            .AddAction("Select Random Point On Navmesh", () =>
             {
-                currentPatrolPointIDX++;
-                if (currentPatrolPointIDX == patrolPoints.Length)
+                if (!m_wandering)
                 {
-                    currentPatrolPointIDX = -1;
-                    m_onPatrol = false;
+                    m_wandering = true;
+                    NavMeshHit hit;
+                    NavMesh.SamplePosition(transform.position, out hit, m_detectionModule.DetectionAreaRadius, 1);
+                    m_wanderPoint.transform.position = hit.position;
+                    m_currentTarget = m_wanderPoint;
                 }
+
+                return RoutineState.Succeded;
+            })
+            .AttachTree(moveToTarget_SequenceContainer)
+            .AddAction("EndWander", () =>
+            {
+                m_currentTarget = null;
+                m_wandering = false;
                 return RoutineState.Succeded;
             })
             .FinishNode();
-        
         ////Protect behavior
         //BaseRoutine protectBehaviorBlock_SelectorContainer = treeBuilder
         //    .BeginSelector("Defend Target From")
@@ -163,11 +189,22 @@ public class WolfAIController : MonoBehaviour {
                 if (PATROL_CHANCE >= Random.value)
                 {
                     currentPatrolPointIDX = 0;
+                    m_onPatrol = true;
                     return true;
                 }
                 return false;
             })
             .AttachTree(patrolBehaviorBlock_SequenceContainer)
+            .FinishNode()
+            .BeginCondition("Start Wander", () => 
+            {
+                if (m_wandering)
+                    return true;
+                if (Random.value <= WANDER_CHANCE)
+                    return true;
+                return false;
+            })
+            .AttachTree(wanderBehavioir_SequenceContainer)
             .FinishNode()
             .FinishNode();
 
@@ -209,6 +246,7 @@ public class WolfAIController : MonoBehaviour {
     // Use this for initialization
     private void Start () {
 
+        m_wanderPoint = new GameObject();
         m_behaviorTreeTick = new WaitForSeconds(BEHAVIOR_TREE_UPDATE_RATE);
         m_currentTarget = gameObject;
         m_wolf = GetComponent<Wolf>();
