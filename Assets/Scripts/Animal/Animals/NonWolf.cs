@@ -29,7 +29,8 @@ public class NonWolf : Animal {
                 Debug.Log("Impossible NonWolf age");
                 break;
         }
-        
+
+        m_needs.Initialize(this);
         for (int i = 0; i < (int)NeedType.NEED_COUNT; i++) {
             m_needs.SetNeed((NeedType)i, Random.Range(50, 101));
         }

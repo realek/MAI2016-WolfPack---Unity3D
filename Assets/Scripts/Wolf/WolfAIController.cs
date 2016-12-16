@@ -95,7 +95,7 @@ public class WolfAIController : MonoBehaviour {
             {
                 Debug.Log("Feast");
                 m_currentTarget = gameObject;
-                if (m_currentTarget.tag == "Food") m_currentTarget.GetComponent<Perishable>().Reduce(10);
+                if (m_currentTarget.tag == "Food") m_currentTarget.GetComponent<Perishable>().Reduce(GlobalVars.WolfEatQnt);
                 m_wolf.needs.ModNeed(NeedType.Hunger, GlobalVars.WolfEatQnt);
                 return RoutineState.Succeded;
 
