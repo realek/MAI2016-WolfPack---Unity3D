@@ -75,6 +75,9 @@ public class Animal : MonoBehaviour {
             return m_needs;
         }
     }
+
+    protected int CarcassQnt;
+
     /// <summary>
     /// Sets current health to max health
     /// </summary>
@@ -89,6 +92,8 @@ public class Animal : MonoBehaviour {
         if (m_currentHealth < 1) {
             GameObject myCarcass = (GameObject) Instantiate((Resources.Load("Carcass")));
             myCarcass.transform.position = transform.position + Vector3.up * 0.1f;
+            myCarcass.GetComponent<Perishable>().SetExpiration(100);
+            myCarcass.GetComponent<Perishable>().SetQuantity(CarcassQnt);
             Destroy(gameObject);
         }
     }

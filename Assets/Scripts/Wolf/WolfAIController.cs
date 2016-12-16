@@ -90,7 +90,8 @@ public class WolfAIController : MonoBehaviour {
             {
                 Debug.Log("Feast");
                 m_currentTarget = gameObject;
-                m_wolf.needs.SetNeed(NeedType.Hunger, 100);
+                if (m_currentTarget.tag == "Food") m_currentTarget.GetComponent<Perishable>().Reduce(10);
+                m_wolf.needs.ModNeed(NeedType.Hunger, 10);
                 return RoutineState.Succeded;
 
             })
@@ -112,8 +113,8 @@ public class WolfAIController : MonoBehaviour {
                 Debug.Log("Drink");
                 m_currentTarget = gameObject;
                 //check if object still exists because it might have expired
-                //if (m_currentTarget.tag = "Water") Perishable.Take(5); //don't call if tag is BigWater (non-perishable)
-                //m_wolf.needs.ModNeed(NeedType.Thirst, 5);
+                if (m_currentTarget.tag == "Water") m_currentTarget.GetComponent<Perishable>().Reduce(5);
+                m_wolf.needs.ModNeed(NeedType.Thirst, 5);
                 m_wolf.needs.SetNeed(NeedType.Thirst, 100);
                 return RoutineState.Succeded;
 

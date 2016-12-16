@@ -19,7 +19,8 @@ public class Elk : NonWolf {
     void Start () {
         InitValues();
         m_strength = AnimalStrength.Strong;
-	}
+        CarcassQnt = 200;
+    }
 
     protected override BaseRoutine CreateBehaviorTree() {
         BehaviorTreeBuilder treeBuilder = new BehaviorTreeBuilder();

@@ -10,6 +10,14 @@ public class Perishable : MonoBehaviour {
         creationTime = DayNightCycler.Instance.GetTimeStamp();
     }
 
+    public void SetExpiration(float exp) {
+        expiration = exp;
+    }
+
+    public void SetQuantity(int qnt) {
+        quantity = qnt;
+    }
+
     public void Reduce(int value) {
         quantity -= value;
     }

@@ -5,7 +5,8 @@ public class Bear : NonWolf {
     void Start () {
         InitValues();
         m_strength = AnimalStrength.VeryStrong;
-	}
+        CarcassQnt = 300;
+    }
 
     protected override BaseRoutine CreateBehaviorTree() {
         BehaviorTreeBuilder treeBuilder = new BehaviorTreeBuilder();
