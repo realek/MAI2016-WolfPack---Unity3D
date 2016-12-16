@@ -8,6 +8,7 @@ public class AIDetectionModule : AIModule {
 
 
     public LayerMask m_detectionLayer;
+    [Tooltip("Max range for the module's detection functionality.")]
     public float DetectionAreaRadius;
     [Range(0.1f, 0.9f), Tooltip("How much of the detection area is representated by the obstruction area, the area is used in order to find out if the agents movement is obstructed")]
     public float HearingAreaPercentage = 0.2f;

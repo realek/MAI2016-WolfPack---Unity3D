@@ -26,7 +26,7 @@ public class WolfAIController : MonoBehaviour {
     private GameObject m_wanderPoint;
     private bool m_onPatrol = false;
     private bool m_wandering = false;
-    private const float WANDER_CHANCE = 0.35f;
+    private const float WANDER_CHANCE = 0.5f;
     private const float PATROL_CHANCE = 0.15f;
     private const float BEHAVIOR_TREE_UPDATE_RATE = 0.2f; // 5 times a second is enough
     private WaitForSeconds m_behaviorTreeTick;
@@ -157,9 +157,18 @@ public class WolfAIController : MonoBehaviour {
                 {
                     m_wandering = true;
                     NavMeshHit hit;
-                    NavMesh.SamplePosition(transform.position, out hit, m_detectionModule.DetectionAreaRadius, 1);
-                    m_wanderPoint.transform.position = hit.position;
-                    m_currentTarget = m_wanderPoint;
+                    Vector3 source = transform.position + (Random.insideUnitSphere * m_detectionModule.DetectionAreaRadius);
+                    if (NavMesh.SamplePosition(source, out hit, m_detectionModule.DetectionAreaRadius, -1))
+                    {
+                        m_wanderPoint.transform.position = hit.position;
+                        m_currentTarget = m_wanderPoint;
+                    }
+                    else
+                    {
+                        Debug.Log("Failed to get random point on navmesh with source at"+source+"hit at: "+hit.position);
+                        return RoutineState.Failed;
+                    }
+
                 }
 
                 return RoutineState.Succeded;
@@ -185,6 +194,8 @@ public class WolfAIController : MonoBehaviour {
             .FinishNode()
             .BeginCondition("On Patrol", () => 
             {
+                if (m_wandering)
+                    return false;
                 if (m_onPatrol)
                     return true;
                 if (PATROL_CHANCE >= Random.value)
