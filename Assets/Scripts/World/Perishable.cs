@@ -2,8 +2,8 @@
 
 public class Perishable : MonoBehaviour {
 
-    private int quantity;
-    private float expiration;
+    [SerializeField] private int quantity;
+    [SerializeField] private float expiration;
     private float creationTime;
 
     private void Start() {
