@@ -24,10 +24,12 @@ public class WolfAIController : MonoBehaviour {
     private int currentPatrolPointIDX = -1;
     private GameObject m_currentTarget;
     private GameObject m_wanderPoint;
+    [SerializeField]
     private bool m_onPatrol = false;
+    [SerializeField]
     private bool m_wandering = false;
     private const float WANDER_CHANCE = 0.5f;
-    private const float PATROL_CHANCE = 0.15f;
+    private const float PATROL_CHANCE = 0.1f;
     private const float BEHAVIOR_TREE_UPDATE_RATE = 0.2f; // 5 times a second is enough
     private WaitForSeconds m_behaviorTreeTick;
     private Coroutine treeRunner;
@@ -212,7 +214,8 @@ public class WolfAIController : MonoBehaviour {
             {
                 if (m_wandering)
                     return true;
-                if (Random.value <= WANDER_CHANCE)
+                float rnd = Random.value;
+                if (rnd <= WANDER_CHANCE+PATROL_CHANCE && rnd > PATROL_CHANCE)
                     return true;
                 return false;
             })
