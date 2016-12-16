@@ -2,12 +2,20 @@
 
 public class Perishable : MonoBehaviour {
 
-    private int quantity;
-    private float expiration;
+    [SerializeField] private int quantity;
+    [SerializeField] private float expiration;
     private float creationTime;
 
     private void Start() {
         creationTime = DayNightCycler.Instance.GetTimeStamp();
+    }
+
+    public void SetExpiration(float exp) {
+        expiration = exp;
+    }
+
+    public void SetQuantity(int qnt) {
+        quantity = qnt;
     }
 
     public void Reduce(int value) {
