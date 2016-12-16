@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using CustomConsts;
+using UnityEngine;
 
 public class Elk : NonWolf {
     
@@ -19,7 +20,7 @@ public class Elk : NonWolf {
     void Start () {
         InitValues();
         m_strength = AnimalStrength.Strong;
-        CarcassQnt = 200;
+        CarcassQnt = GlobalVars.ElkCarcassQnt;
     }
 
     protected override BaseRoutine CreateBehaviorTree() {

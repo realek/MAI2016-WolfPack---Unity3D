@@ -1,11 +1,12 @@
-﻿using UnityEngine;
+﻿using CustomConsts;
+using UnityEngine;
 
 public class Coyote : NonWolf {
 
     void Start () {
         InitValues();
         m_strength = AnimalStrength.Medium;
-        CarcassQnt = 140;
+        CarcassQnt = GlobalVars.CoyoteCarcassQnt;
     }
 
     protected override BaseRoutine CreateBehaviorTree() {

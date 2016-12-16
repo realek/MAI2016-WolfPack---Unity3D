@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using CustomConsts;
+using UnityEngine;
 
 public enum WolfPackRole
 {
@@ -28,8 +29,10 @@ public class Wolf : Animal {
 
         Heal();
         m_needs.Initialize(this);
-	
-	}
+        m_strength = AnimalStrength.Strong;
+        CarcassQnt = GlobalVars.WolfCarcassQnt;
+
+    }
 
     private void OnEnable()
     {

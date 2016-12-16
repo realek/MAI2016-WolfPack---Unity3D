@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.AI;
+using CustomConsts;
 
 [RequireComponent(typeof(Wolf))]
 public class WolfAIController : MonoBehaviour {
@@ -93,7 +94,7 @@ public class WolfAIController : MonoBehaviour {
                 Debug.Log("Feast");
                 m_currentTarget = gameObject;
                 if (m_currentTarget.tag == "Food") m_currentTarget.GetComponent<Perishable>().Reduce(10);
-                m_wolf.needs.ModNeed(NeedType.Hunger, 10);
+                m_wolf.needs.ModNeed(NeedType.Hunger, GlobalVars.WolfEatQnt);
                 return RoutineState.Succeded;
 
             })
@@ -115,9 +116,8 @@ public class WolfAIController : MonoBehaviour {
                 Debug.Log("Drink");
                 m_currentTarget = gameObject;
                 //check if object still exists because it might have expired
-                if (m_currentTarget.tag == "Water") m_currentTarget.GetComponent<Perishable>().Reduce(5);
-                m_wolf.needs.ModNeed(NeedType.Thirst, 5);
-                m_wolf.needs.SetNeed(NeedType.Thirst, 100);
+                if (m_currentTarget.tag == "Water") m_currentTarget.GetComponent<Perishable>().Reduce(GlobalVars.WolfDrinkQnt);
+                m_wolf.needs.ModNeed(NeedType.Thirst, GlobalVars.WolfDrinkQnt);
                 return RoutineState.Succeded;
 
             })

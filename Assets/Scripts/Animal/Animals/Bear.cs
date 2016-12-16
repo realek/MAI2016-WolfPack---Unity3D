@@ -1,11 +1,12 @@
-﻿using UnityEngine;
+﻿using CustomConsts;
+using UnityEngine;
 
 public class Bear : NonWolf {
 
     void Start () {
         InitValues();
         m_strength = AnimalStrength.VeryStrong;
-        CarcassQnt = 300;
+        CarcassQnt = GlobalVars.BearCarcassQnt;
     }
 
     protected override BaseRoutine CreateBehaviorTree() {
