@@ -246,7 +246,7 @@ public class WolfAIController : MonoBehaviour {
     // Use this for initialization
     private void Start () {
 
-        m_wanderPoint = new GameObject();
+        m_wanderPoint = new GameObject("Wander point for "+gameObject.name+" id: "+gameObject.GetInstanceID());
         m_behaviorTreeTick = new WaitForSeconds(BEHAVIOR_TREE_UPDATE_RATE);
         m_currentTarget = gameObject;
         m_wolf = GetComponent<Wolf>();
@@ -283,6 +283,11 @@ public class WolfAIController : MonoBehaviour {
         m_detectionModule.Shutdown();
         m_movementModule.Shutdown();
         treeRunner = null;
+    }
+
+    private void OnDestroy()
+    {
+        Destroy(m_wanderPoint);
     }
 
     void OnDrawGizmosSelected()
