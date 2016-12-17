@@ -24,15 +24,15 @@ public class DayNightCycler : MonoBehaviour {
     float m_timeRate = 1.0f;
 
     [Space(10)]
-    public bool affectLighting = true;
+    public bool dynamicLighting = true;
     public Light dayLighting;
     public Light nightLighting;
     public Vector3 lightingDefaultRotation = new Vector3(0f, -30f, 0f);
 
     private WaitForSeconds m_timeTick;
     private DNCycleTime m_currentTime = DNCycleTime.Morning;
-    private const int START_TIME_24H = 9; // Current start time is Morning
-    private readonly int[] START_MIN = { 0, 0 };
+    private const int START_TIME_24H = 16; // Current start time is Morning
+    private readonly int[] START_MIN = { 3, 0 };
     private const int START_DAY = 0; // Current start day is 0
     private int m_cHour;
     private int[] m_cMinutes;
@@ -40,11 +40,16 @@ public class DayNightCycler : MonoBehaviour {
 
     private int totalTime; // the current time in increments of 6 hours, used for lighting
 
-    private const float timeIntensityDivisor = 240f; // 360/240 is 1.5f
     private const float sixHours = 360f; // totalTime/360 is 0f to 1f
-    private const int minLightAngle = 5;
-    private const int spanLightAngle = 85;
+    private const int minLightAngle = 20;
+    private const int spanLightAngle = 70;
     private const int additionalLightAngle = 90;
+    private const float minIntensityD = 0.5f;
+    private const float maxIntensityD = 1.7f;
+    private const float minIntensityN = 1.3f;
+    private const float maxIntensityN = 2.5f;
+
+    private float currX;
 
     public DNCycleTime CurrentTime
     {
@@ -70,13 +75,6 @@ public class DayNightCycler : MonoBehaviour {
         m_cHour = START_TIME_24H;
         m_cMinutes = START_MIN;
         m_cDay = START_DAY;
-        if (affectLighting) {
-            //9am settings
-            dayLighting.enabled = true;
-            nightLighting.enabled = false;
-            dayLighting.intensity = 0f;
-            nightLighting.intensity = 1.5f;
-        }
     }
 
     void OnEnable()
@@ -86,12 +84,18 @@ public class DayNightCycler : MonoBehaviour {
         m_cMinutes = START_MIN;
         m_cDay = START_DAY;
         
-        if (affectLighting) {
-            //9am settings
+        if (dynamicLighting) {
             dayLighting.enabled = true;
-            nightLighting.enabled = false;
-            dayLighting.intensity = 0f;
-            nightLighting.intensity = 1.5f;
+            if (START_TIME_24H < 5 || START_TIME_24H >= 19) {
+                dayLighting.enabled = false;
+                nightLighting.enabled = true;
+            } else if (START_TIME_24H >= 7 && START_TIME_24H < 19) {
+                dayLighting.enabled = true;
+                nightLighting.enabled = false;
+            } else {
+                dayLighting.enabled = true;
+                nightLighting.enabled = true;
+            }
         }
 
         if (m_timeTick == null) //if created as enabled false
@@ -133,52 +137,78 @@ public class DayNightCycler : MonoBehaviour {
             }
 
             //change lighting based on time
-            if (affectLighting) {
+            if (dynamicLighting) {
                 totalTime = (m_cHour % 6) * 60 + m_cMinutes[0]*10 + m_cMinutes[1] + 1;
-                if (m_cHour < 6) {
+                if (m_cHour < 5) {
                     if (dayLighting.enabled) {
                         dayLighting.enabled = false;
                         nightLighting.enabled = true;
-                        dayLighting.intensity = 0f;
-                        nightLighting.intensity = 0f;
-                    } else {
-                        nightLighting.intensity = totalTime / timeIntensityDivisor;
-                        nightLighting.transform.localRotation = Quaternion.Euler(new Vector3((totalTime / sixHours) * spanLightAngle + minLightAngle,
-                            lightingDefaultRotation.y, lightingDefaultRotation.z));
                     }
+                    nightLighting.intensity = minIntensityN + (maxIntensityN - minIntensityN) * ((sixHours - totalTime) / sixHours);
+                    nightLighting.transform.localRotation = Quaternion.Euler(new Vector3((totalTime / sixHours) * spanLightAngle
+                        + additionalLightAngle, lightingDefaultRotation.y, lightingDefaultRotation.z));
+                } else if (m_cHour < 6) {
+                    if (!dayLighting.enabled) {
+                        dayLighting.enabled = true;
+                    }
+                    nightLighting.intensity = minIntensityN + (maxIntensityN - minIntensityN) * ((sixHours - totalTime) / sixHours);
+                    nightLighting.transform.localRotation = Quaternion.Euler(new Vector3((totalTime / sixHours) * spanLightAngle
+                        + additionalLightAngle, lightingDefaultRotation.y, lightingDefaultRotation.z));
+
+                    dayLighting.intensity = minIntensityD * ((totalTime - 300) / 60f);
+                    dayLighting.transform.localRotation = Quaternion.Euler(new Vector3(minLightAngle * ((totalTime - 300)/60f),
+                        lightingDefaultRotation.y, lightingDefaultRotation.z));
+                } else if (m_cHour < 7) {
+                    nightLighting.intensity = minIntensityN* ((60 - totalTime) / 60f);
+                    nightLighting.transform.localRotation = Quaternion.Euler(new Vector3(minLightAngle * (totalTime / 60f) + spanLightAngle
+                        + additionalLightAngle, lightingDefaultRotation.y, lightingDefaultRotation.z));
+
+                    dayLighting.intensity = minIntensityD + (maxIntensityD - minIntensityD) * (totalTime / sixHours);
+                    dayLighting.transform.localRotation = Quaternion.Euler(new Vector3((totalTime / sixHours) * spanLightAngle + minLightAngle,
+                        lightingDefaultRotation.y, lightingDefaultRotation.z));
                 } else if (m_cHour < 12) {
+                    if (nightLighting.enabled) {
+                        dayLighting.enabled = true;
+                        nightLighting.enabled = false;
+                    }
+                    dayLighting.intensity = minIntensityD + (maxIntensityD - minIntensityD) * (totalTime / sixHours);
+                    dayLighting.transform.localRotation = Quaternion.Euler(new Vector3((totalTime / sixHours) * spanLightAngle + minLightAngle,
+                            lightingDefaultRotation.y, lightingDefaultRotation.z));
+                } else if (m_cHour < 17) {
+                    if (nightLighting.enabled) {
+                        dayLighting.enabled = true;
+                        nightLighting.enabled = false;
+                    }
+                    dayLighting.intensity = minIntensityD + (maxIntensityD - minIntensityD) * ((sixHours - totalTime) / sixHours);
+                    dayLighting.transform.localRotation = Quaternion.Euler(new Vector3((totalTime / sixHours) * spanLightAngle
+                            + additionalLightAngle, lightingDefaultRotation.y, lightingDefaultRotation.z));
+                } else if (m_cHour < 18) {
+                    if (!nightLighting.enabled) {
+                        nightLighting.enabled = true;
+                    }
+                    dayLighting.intensity = minIntensityD + (maxIntensityD - minIntensityD) * ((sixHours - totalTime) / sixHours);
+                    dayLighting.transform.localRotation = Quaternion.Euler(new Vector3((totalTime / sixHours) * spanLightAngle
+                        + additionalLightAngle, lightingDefaultRotation.y, lightingDefaultRotation.z));
+
+                    nightLighting.intensity = minIntensityN * ((totalTime - 300) / 60f);
+                    nightLighting.transform.localRotation = Quaternion.Euler(new Vector3(minLightAngle * ((totalTime - 300) / 60f),
+                            lightingDefaultRotation.y, lightingDefaultRotation.z));
+                } else if (m_cHour < 19) {
+                    dayLighting.intensity = minIntensityD * ((60 - totalTime) / 60f);
+                    dayLighting.transform.localRotation = Quaternion.Euler(new Vector3(minLightAngle * (totalTime / 60f) + spanLightAngle
+                        + additionalLightAngle, lightingDefaultRotation.y, lightingDefaultRotation.z));
+
+                    nightLighting.intensity = minIntensityN + (maxIntensityN - minIntensityN) * (totalTime / sixHours);
+                    nightLighting.transform.localRotation = Quaternion.Euler(new Vector3((totalTime / sixHours) * spanLightAngle + minLightAngle,
+                        lightingDefaultRotation.y, lightingDefaultRotation.z));
+                } else {
                     if (dayLighting.enabled) {
                         dayLighting.enabled = false;
                         nightLighting.enabled = true;
-                        dayLighting.intensity = 0f;
-                        nightLighting.intensity = 1.5f;
-                    } else {
-                        nightLighting.intensity = 1.5f - totalTime / timeIntensityDivisor; 
-                        nightLighting.transform.localRotation = Quaternion.Euler(new Vector3((totalTime / sixHours) * spanLightAngle + minLightAngle
-                            + additionalLightAngle, lightingDefaultRotation.y, lightingDefaultRotation.z));
                     }
-                } else if (m_cHour < 18) {
-                    if (!dayLighting.enabled) {
-                        dayLighting.enabled = true;
-                        nightLighting.enabled = false;
-                        dayLighting.intensity = 0f;
-                        nightLighting.intensity = 1.5f;
-                    } else {
-                        dayLighting.intensity = totalTime / timeIntensityDivisor;
-                        dayLighting.transform.localRotation = Quaternion.Euler(new Vector3((totalTime / sixHours) * spanLightAngle + minLightAngle,
+                    nightLighting.intensity = minIntensityN + (maxIntensityN - minIntensityN) * (totalTime / sixHours);
+                    nightLighting.transform.localRotation = Quaternion.Euler(new Vector3((totalTime / sixHours) * spanLightAngle + minLightAngle,
                             lightingDefaultRotation.y, lightingDefaultRotation.z));
-                    }
-                } else {
-                    if (!dayLighting.enabled) {
-                        dayLighting.enabled = true;
-                        nightLighting.enabled = false;
-                        dayLighting.intensity = 1.5f;
-                        nightLighting.intensity = 1.5f;
-                    } else {
-                        dayLighting.intensity = 1.5f - totalTime / timeIntensityDivisor;
-                        dayLighting.transform.localRotation = Quaternion.Euler(new Vector3((totalTime / sixHours) * spanLightAngle + minLightAngle
-                            + additionalLightAngle, lightingDefaultRotation.y, lightingDefaultRotation.z));
-                    }
                 }
             }
 
