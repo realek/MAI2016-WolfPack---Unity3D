@@ -1,5 +1,6 @@
 ﻿using CustomConsts;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Elk : NonWolf {
     
@@ -8,6 +9,10 @@ public class Elk : NonWolf {
     [SerializeField]
     private AIMovementModule m_movementModule;
     private GameObject m_currentTarget;
+
+    private GameObject m_wanderPoint;
+    [SerializeField]
+    private bool m_wandering = false;
 
     private bool closeToOthers;
     private AnimalGroup m_group;
@@ -21,7 +26,10 @@ public class Elk : NonWolf {
         InitValues();
         m_strength = AnimalStrength.Strong;
         CarcassQnt = GlobalVars.ElkCarcassQnt;
+        m_wanderPoint = new GameObject("Wander point for " + gameObject.name + " id: " + gameObject.GetInstanceID());
     }
+
+
 
     protected override BaseRoutine CreateBehaviorTree() {
         BehaviorTreeBuilder treeBuilder = new BehaviorTreeBuilder();
@@ -40,6 +48,34 @@ public class Elk : NonWolf {
                         return RoutineState.Running;
                     return RoutineState.Failed;
                 })
+            .FinishNode();
+
+        //wander behavior
+        BaseRoutine wanderBehavioir_SequenceContainer = treeBuilder
+            .BeginSequence("Wander Sequence")
+            .AddAction("Select Random Point On Navmesh", () => {
+                if (!m_wandering) {
+                    m_wandering = true;
+                    NavMeshHit hit;
+                    Vector3 source = transform.position + (Random.insideUnitSphere * m_detectionModule.DetectionAreaRadius);
+                    if (NavMesh.SamplePosition(source, out hit, m_detectionModule.DetectionAreaRadius, -1)) {
+                        m_wanderPoint.transform.position = hit.position;
+                        m_currentTarget = m_wanderPoint;
+                    } else {
+                        Debug.Log("Failed to get random point on navmesh with source at" + source + "hit at: " + hit.position);
+                        return RoutineState.Failed;
+                    }
+
+                }
+
+                return RoutineState.Succeded;
+            })
+            .AttachTree(moveToTarget_SequenceContainer)
+            .AddAction("EndWander", () => {
+                m_currentTarget = null;
+                m_wandering = false;
+                return RoutineState.Succeded;
+            })
             .FinishNode();
 
         //return to group

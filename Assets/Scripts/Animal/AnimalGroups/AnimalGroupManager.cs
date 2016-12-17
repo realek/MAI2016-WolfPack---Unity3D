@@ -32,7 +32,7 @@ public class AnimalGroupManager : Singleton<AnimalGroupManager> {
     /// Registers a new herd with provided initial members.
     /// </summary>
     /// <param name="initialMembers"></param>
-    public void RegisterHerd(params Elk[] initialMembers)
+    public void RegisterHerd(params NonWolf[] initialMembers)
     {
         var herd = new Herd();
         for (int i = 0; i < initialMembers.Length; i++)
