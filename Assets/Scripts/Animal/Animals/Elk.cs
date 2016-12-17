@@ -1,4 +1,5 @@
-﻿using CustomConsts;
+﻿using System.Collections;
+using CustomConsts;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -22,11 +23,27 @@ public class Elk : NonWolf {
     private int dmg3 = 6;
     private int dmg4 = 4;
 
+    private const float BEHAVIOR_TREE_UPDATE_RATE = 0.2f;
+    private WaitForSeconds m_behaviorTreeTick;
+    private Coroutine treeRunner;
+
     void Start () {
         InitValues();
         m_strength = AnimalStrength.Strong;
         CarcassQnt = GlobalVars.ElkCarcassQnt;
         m_wanderPoint = new GameObject("Wander point for " + gameObject.name + " id: " + gameObject.GetInstanceID());
+        m_behaviorTreeTick = new WaitForSeconds(BEHAVIOR_TREE_UPDATE_RATE);
+        treeRunner = StartCoroutine(BehaviorTreeRunner());
+    }
+
+    IEnumerator BehaviorTreeRunner() {
+        if (m_behaviorTree == null)
+            yield break;
+        m_behaviorTree.Start();
+        while (true) {
+            m_behaviorTree.Tick();
+            yield return m_behaviorTreeTick;
+        }
     }
 
 
@@ -212,6 +229,25 @@ public class Elk : NonWolf {
                     .FinishNode()
                 .FinishNode()
                 .AttachTree(attackedIndividual_SelectorContainer)
+            .FinishNode();
+
+        //the behavior tree
+        BaseRoutine btTree = treeBuilder
+            ;
+
+        //wait or execute tree
+        BaseRoutine waitOrDo_SelectorContainer = treeBuilder
+            .BeginSelector("To do or not to do")
+                .BeginSequence("Waiting")
+                    .BeginCondition("Do I have to wait", () => (WaitTime > 0.001f))
+                    .AddAction("Reduce wait time", () => {
+                        WaitTime -= BEHAVIOR_TREE_UPDATE_RATE;
+                        if (WaitTime < 0) WaitTime = 0;
+                        return RoutineState.Succeded;
+                    })
+                    .FinishNode()
+                .FinishNode()
+                .AttachTree(btTree)
             .FinishNode();
 
         return treeBuilder;

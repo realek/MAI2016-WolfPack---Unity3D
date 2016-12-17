@@ -77,6 +77,9 @@ public class Animal : MonoBehaviour {
         }
     }
 
+    [HideInInspector]
+    public float WaitTime;
+
     protected int CarcassQnt;
 
     /// <summary>
