@@ -4,14 +4,14 @@ using UnityEngine;
 
 public class AnimalGroupManager : Singleton<AnimalGroupManager> {
 
-    private Dictionary<int, AnimalGroup> m_groupds;
+    private Dictionary<int, AnimalGroup> m_groups;
     // Use this for initialization
 
     protected AnimalGroupManager() { } // disallow construction
     
     void Awake () {
 
-        m_groupds = new Dictionary<int, AnimalGroup>();
+        m_groups = new Dictionary<int, AnimalGroup>();
 	}
 	
     /// <summary>
@@ -24,7 +24,7 @@ public class AnimalGroupManager : Singleton<AnimalGroupManager> {
         for (int i = 0; i < initialMembers.Length; i++)
             initialMembers[i].SetGroup(pack);
 
-        m_groupds.Add(pack.GUIDGroupID, pack);
+        m_groups.Add(pack.GUIDGroupID, pack);
     }
 
 
@@ -38,12 +38,12 @@ public class AnimalGroupManager : Singleton<AnimalGroupManager> {
         for (int i = 0; i < initialMembers.Length; i++)
             initialMembers[i].SetGroup(herd);
 
-        m_groupds.Add(herd.GUIDGroupID, herd);
+        m_groups.Add(herd.GUIDGroupID, herd);
     }
 
     public List<T> GetAnimalGroupsOfType<T>() where T : AnimalGroup
     {
-        var groups = m_groupds.Values;
+        var groups = m_groups.Values;
         List<T> targetGroups = new List<T>();
         foreach(AnimalGroup g in groups)
         {
@@ -57,6 +57,6 @@ public class AnimalGroupManager : Singleton<AnimalGroupManager> {
 
     public void UnRegisterGroup(AnimalGroup group)
     {
-        m_groupds.Remove(group.GUIDGroupID);
+        m_groups.Remove(group.GUIDGroupID);
     }
 }
