@@ -14,8 +14,7 @@ public class Elk : NonWolf {
     private GameObject m_wanderPoint;
     [SerializeField]
     private bool m_wandering = false;
-
-    private bool closeToOthers;
+    
     private AnimalGroup m_group;
     private int atkDmg;
     private int dmg1 = 0;
@@ -70,38 +69,37 @@ public class Elk : NonWolf {
         //wander behavior
         BaseRoutine wanderBehavioir_SequenceContainer = treeBuilder
             .BeginSequence("Wander Sequence")
-            .AddAction("Select Random Point On Navmesh", () => {
-                if (!m_wandering) {
-                    m_wandering = true;
-                    NavMeshHit hit;
-                    Vector3 source = transform.position + (Random.insideUnitSphere * m_detectionModule.DetectionAreaRadius);
-                    if (NavMesh.SamplePosition(source, out hit, m_detectionModule.DetectionAreaRadius, -1)) {
-                        m_wanderPoint.transform.position = hit.position;
-                        m_currentTarget = m_wanderPoint;
-                    } else {
-                        Debug.Log("Failed to get random point on navmesh with source at" + source + "hit at: " + hit.position);
-                        return RoutineState.Failed;
+                .AddAction("Select Random Point On Navmesh", () => {
+                    if (!m_wandering) {
+                        m_wandering = true;
+                        NavMeshHit hit;
+                        Vector3 source = transform.position + (Random.insideUnitSphere * m_detectionModule.DetectionAreaRadius);
+                        if (NavMesh.SamplePosition(source, out hit, m_detectionModule.DetectionAreaRadius, -1)) {
+                            m_wanderPoint.transform.position = hit.position;
+                            m_currentTarget = m_wanderPoint;
+                        } else {
+                            Debug.Log("Failed to get random point on navmesh with source at" + source + "hit at: " + hit.position);
+                            return RoutineState.Failed;
+                        }
+
                     }
 
-                }
-
-                return RoutineState.Succeded;
-            })
-            .AttachTree(moveToTarget_SequenceContainer)
-            .AddAction("EndWander", () => {
-                m_currentTarget = null;
-                m_wandering = false;
-                return RoutineState.Succeded;
-            })
+                    return RoutineState.Succeded;
+                })
+                .AttachTree(moveToTarget_SequenceContainer)
+                .AddAction("EndWander", () => {
+                    m_currentTarget = null;
+                    m_wandering = false;
+                    return RoutineState.Succeded;
+                })
             .FinishNode();
 
         //return to group
         BaseRoutine returnToGroup_SequenceContainer = treeBuilder
             .BeginSequence("Return to group")
-                .AddAction("Select elk location", () => {
-                    //m_currentTarget = (m_group.GetClosestMember(0) != gameObject)
-                    //    ? m_group.GetClosestMember(0).gameObject
-                    //    : m_group.GetClosestMember(1).gameObject;
+                .AddAction("Select herd location", () => {
+                    m_wanderPoint.transform.position = GetGroupCenter();
+                    m_currentTarget = m_wanderPoint; 
                     return RoutineState.Succeded;
                 })
                 .AttachTree(moveToTarget_SequenceContainer)
@@ -110,25 +108,43 @@ public class Elk : NonWolf {
         //non-attacked behavior when in a group
         BaseRoutine groupBehavior_SelectorContainer = treeBuilder
                 .BeginSelector("Choice of action")
-                    .BeginCondition("Are others far away", () => !closeToOthers)
+                    .BeginCondition("Are others far away", () => ((transform.position - GetGroupCenter()).sqrMagnitude > GlobalVars.ElkHerdRadius))
                         .AttachTree(returnToGroup_SequenceContainer)
                     .FinishNode()
                     .BeginCondition("Should I move around", () => (Random.value > 0.5f))
-                        .BeginSequence("Move around")
-                            .AddAction("Select random location", () => {
-                                //TODO set a random nearby Vector3 as target
-                                return RoutineState.Succeded;
-                            })
-                            .AttachTree(moveToTarget_SequenceContainer)
-                        .FinishNode()
+                        .AttachTree(wanderBehavioir_SequenceContainer)
                     .FinishNode()
                 .FinishNode();
         
-        //run away from wolves
+        //run away from wolves, place condition have enough energy
         BaseRoutine runAway_SequenceContainer = treeBuilder
             .BeginSequence("Run away from wolves")
+                //go in the direction opposite of the wolf, same distance to wolf
                 .AddAction("Choose run direction", () => {
-                    //TODO set target in the opposite direction of the wolves
+                    m_wanderPoint.transform.position = new Vector3(2*transform.position.x - m_currentTarget.transform.position.x,
+                        transform.position.y, 2*transform.position.z - m_currentTarget.transform.position.z);
+                    m_currentTarget = m_wanderPoint;
+                    return RoutineState.Succeded;
+                })
+                .AttachTree(moveToTarget_SequenceContainer)
+            .FinishNode();
+
+        //run away from wolves, place condition have enough energy
+        BaseRoutine groupRunAway_SequenceContainer = treeBuilder
+            .BeginSequence("Run away from wolves")
+                //go in the direction opposite of the wolf, twice the distance from the center of the group to wolf
+                .AddAction("Choose run direction", () => {
+                    Vector3 center = GetGroupCenter();
+                    float xPos = 3 * center.x - 2 * m_currentTarget.transform.position.x;
+                    float zPos = 3 * center.z - 2 * m_currentTarget.transform.position.z;
+
+                    //if the goal point ends up beyond the field limits, instead of running away from the wolf
+                    // charge straight through him
+                    if (xPos < 210 || xPos > 710) xPos = 2 * m_currentTarget.transform.position.x - center.x;
+                    if (zPos < 120 || zPos > 860) xPos = 2 * m_currentTarget.transform.position.z - center.z;
+
+                    m_wanderPoint.transform.position = new Vector3(xPos, transform.position.y, zPos);
+                    m_currentTarget = m_wanderPoint;
                     return RoutineState.Succeded;
                 })
                 .AttachTree(moveToTarget_SequenceContainer)
@@ -138,7 +154,6 @@ public class Elk : NonWolf {
         BaseRoutine attack_SequenceContainer = treeBuilder
             .BeginSequence("Run away from wolves")
                 .AddAction("Animate and deal damage", () => {
-                    //TODO add animator animation
                     if (m_currentTarget == null || m_currentTarget == gameObject || m_currentTarget.GetComponent<Animal>() == null)
                         return RoutineState.Failed;
                     switch (m_age) {
@@ -159,26 +174,36 @@ public class Elk : NonWolf {
                     return RoutineState.Succeded;
                 })
                 .AddAction("Cooldown", () => {
-                    //TODO: wait animation time to finish
-                    float atkLag;
-                    if (m_currentHealth > 30) atkLag = 2;
-                    else atkLag = 5;
-                    //TODO: wait atkLag time
+                    if (m_currentHealth > 30) WaitTime = 1; //TODO #animTime
+                    else WaitTime = 2;
                     return RoutineState.Succeded;
                 })
             .FinishNode();
 
         //fight behavior
         BaseRoutine fight_SequenceContainer = treeBuilder
-            //TODO choose lowest health target
+            .AddAction("Find wolf with lowest hp", () => {
+                int weakest = 101;
+                foreach (Collider t in m_detectionModule.DetectedGameObjects) {
+                    var m_wolf = t.GetComponent<Wolf>();
+                    if (m_wolf && m_wolf.m_currentHealth < weakest) {
+                        weakest = m_wolf.m_currentHealth;
+                        m_currentTarget = m_wolf.gameObject;
+                    }
+                }
+                return RoutineState.Succeded;
+            })
             .AttachTree(moveToTarget_SequenceContainer)
             .AttachTree(attack_SequenceContainer)
             .AddAction("Win", () => RoutineState.Succeded);
 
         //stay behavior
         BaseRoutine stayAndWait_SequenceContainer = treeBuilder
-            //TODO: stay and wait
-            .AddAction("Wait", () => RoutineState.Succeded);
+            .AddAction("Wait", () => {
+                WaitTime = 1; //#animTime regular wait time
+                needs.ModNeed(NeedType.Energy, GlobalVars.RestEnIncrease);
+                return RoutineState.Succeded;
+            });
 
         //attacked and alone behavior
         BaseRoutine attackedIndividual_SelectorContainer = treeBuilder
@@ -186,15 +211,16 @@ public class Elk : NonWolf {
                 .BeginCondition("none", () => (Bravery == 0))
                     .BeginSelector("Fight or flight")
                         .BeginCondition("Are the wolves too many", () => {
-                            //TODO count attacking wolves
-                            //for Elk if (count > 2)
-                            return true;
+                            int wolfCount = 0;
+                            foreach (Collider t in m_detectionModule.DetectedGameObjects) {
+                                if (t.tag == "Wolf") {
+                                    wolfCount++;
+                                }
+                            }
+                            return (wolfCount > 2);
                         })
                             .BeginSelector("Can I run away")
-                                .BeginCondition("Do I have energy left", () => {
-                                    //TODO if energy > 10
-                                    return true;
-                                })
+                                .BeginCondition("Do I have energy left", () => (needs.GetNeed(NeedType.Energy) > 10))
                                     .AttachTree(runAway_SequenceContainer)
                                 .FinishNode()
                                 .AttachTree(fight_SequenceContainer) //if not enough energy to run, fight
@@ -214,16 +240,9 @@ public class Elk : NonWolf {
             .BeginSelector("Attacked action")
                 .BeginCondition("Am I in a group", () => (m_group.GetSize() > 1))
                     .BeginSelector("Stay or flee group")
+                        //am I healthy enough to stay in the herd
                         .BeginCondition("Am I unharmed", () => (m_currentHealth > 79))
-                            .BeginSelector("Run away with group")
-                          //      .BeginCondition("Am I member 0 of my group", () => (m_group.GetClosestMember(0) == gameObject))
-                                    .AttachTree(runAway_SequenceContainer)    
-                                .FinishNode()
-                                .BeginCondition("Have the others ran away", () => !closeToOthers)
-                                    .AttachTree(returnToGroup_SequenceContainer)
-                                .FinishNode()
-                                .AttachTree(stayAndWait_SequenceContainer) //else stay in the same place
-                            .FinishNode()
+                            .AttachTree(groupRunAway_SequenceContainer)
                         .FinishNode()
                         .AttachTree(attackedIndividual_SelectorContainer)
                     .FinishNode()
@@ -233,6 +252,7 @@ public class Elk : NonWolf {
 
         //the behavior tree
         BaseRoutine btTree = treeBuilder
+            
             ;
 
         //wait or execute tree

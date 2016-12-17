@@ -10,7 +10,10 @@
         public const int RabbitCarcassQnt = 500;
         public const int CoyoteCarcassQnt = 1400;
         public const int ElkCarcassQnt = 2000;
-        public const int BearCarcassQnt = 3000;
+        public const int BearCarcassQnt = 3000; 
+
+        public const int RestEnIncrease = 10;
+        public const float ElkHerdRadius = 8f; //max distance before a wandering elk goes back to the center
     }
 }
 

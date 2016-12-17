@@ -64,7 +64,7 @@ public class Animal : MonoBehaviour {
                 return true;
         }
     }
-    protected int m_currentHealth;
+    public int m_currentHealth;
     [SerializeField]
     protected int m_maxHealth;
     [SerializeField]
@@ -112,6 +112,9 @@ public class Animal : MonoBehaviour {
     {
         currentGroup.RemoveMember(this);
         currentGroup = null;
-        
+    }
+
+    public Vector3 GetGroupCenter() {
+        return currentGroup.GetGroupPosition(this);
     }
 }
