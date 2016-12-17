@@ -143,6 +143,7 @@ public class DayNightCycler : MonoBehaviour {
                     if (dayLighting.enabled) {
                         dayLighting.enabled = false;
                         nightLighting.enabled = true;
+                        //PreySpawner.Instance.Repopulate(); //check if the world needs repopulation once per day
                     }
                     nightLighting.intensity = minIntensityN + (maxIntensityN - minIntensityN) * ((sixHours - totalTime) / sixHours);
                     nightLighting.transform.localRotation = Quaternion.Euler(new Vector3((totalTime / sixHours) * spanLightAngle
