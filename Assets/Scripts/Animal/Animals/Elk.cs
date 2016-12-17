@@ -5,48 +5,17 @@ using UnityEngine.AI;
 
 public class Elk : NonWolf {
     
-    [SerializeField]
-    private AIDetectionModule m_detectionModule;
-    [SerializeField]
-    private AIMovementModule m_movementModule;
-    private GameObject m_currentTarget;
-
-    private GameObject m_wanderPoint;
-    [SerializeField]
-    private bool m_wandering = false;
-    
-    private AnimalGroup m_group;
-    private int atkDmg;
-    private int dmg1 = 0;
-    private int dmg2 = 2;
-    private int dmg3 = 6;
-    private int dmg4 = 4;
-
-    private const float BEHAVIOR_TREE_UPDATE_RATE = 0.2f;
-    private WaitForSeconds m_behaviorTreeTick;
-    private Coroutine treeRunner;
+    private int dmg1 = GlobalVars.ElkAtk1;
+    private int dmg2 = GlobalVars.ElkAtk2;
+    private int dmg3 = GlobalVars.ElkAtk3;
+    private int dmg4 = GlobalVars.ElkAtk4;
 
     void Start () {
-        InitValues();
         m_strength = AnimalStrength.Strong;
         CarcassQnt = GlobalVars.ElkCarcassQnt;
-        m_wanderPoint = new GameObject("Wander point for " + gameObject.name + " id: " + gameObject.GetInstanceID());
-        m_behaviorTreeTick = new WaitForSeconds(BEHAVIOR_TREE_UPDATE_RATE);
-        treeRunner = StartCoroutine(BehaviorTreeRunner());
+        InitValues();
     }
-
-    IEnumerator BehaviorTreeRunner() {
-        if (m_behaviorTree == null)
-            yield break;
-        m_behaviorTree.Start();
-        while (true) {
-            m_behaviorTree.Tick();
-            yield return m_behaviorTreeTick;
-        }
-    }
-
-
-
+    
     protected override BaseRoutine CreateBehaviorTree() {
         BehaviorTreeBuilder treeBuilder = new BehaviorTreeBuilder();
 
@@ -241,7 +210,7 @@ public class Elk : NonWolf {
                 .BeginCondition("Am I in a group", () => (m_group.GetSize() > 1))
                     .BeginSelector("Stay or flee group")
                         //am I healthy enough to stay in the herd
-                        .BeginCondition("Am I unharmed", () => (m_currentHealth > 79))
+                        .BeginCondition("Am I unharmed and not tired", () => (m_currentHealth > 79 && needs.GetNeed(NeedType.Energy) > 10))
                             .AttachTree(groupRunAway_SequenceContainer)
                         .FinishNode()
                         .AttachTree(attackedIndividual_SelectorContainer)
@@ -250,13 +219,28 @@ public class Elk : NonWolf {
                 .AttachTree(attackedIndividual_SelectorContainer)
             .FinishNode();
 
-        //the behavior tree
+        //the executed behavior tree
         BaseRoutine btTree = treeBuilder
-            
+            .BeginSelector("What to do")
+                .BeginCondition("Are wolves nearby", () => {
+                    foreach (Collider t in m_detectionModule.DetectedGameObjects) {
+                        if (t.GetComponent<Wolf>()) return true;
+                    }
+                    return false;
+                })
+                    .AttachTree(attackedBehavior_SequenceContainer)
+                .FinishNode()
+                .BeginCondition("Am I in a group", () => (currentGroup != null))
+                    .AttachTree(groupBehavior_SelectorContainer)
+                .FinishNode()
+                .BeginCondition("Should I wander", () => (Random.value > 0.3f))
+                    .AttachTree(wanderBehavioir_SequenceContainer)
+                .FinishNode()
+            .FinishNode()
             ;
 
-        //wait or execute tree
-        BaseRoutine waitOrDo_SelectorContainer = treeBuilder
+        //the actual tree
+        treeBuilder
             .BeginSelector("To do or not to do")
                 .BeginSequence("Waiting")
                     .BeginCondition("Do I have to wait", () => (WaitTime > 0.001f))
