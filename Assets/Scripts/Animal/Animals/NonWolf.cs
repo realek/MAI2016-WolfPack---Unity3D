@@ -44,15 +44,7 @@ public class NonWolf : Animal {
                 break;
         }
 
-        m_needs.Initialize(this);
-        for (int i = 0; i < (int)NeedType.NEED_COUNT; i++) {
-            m_needs.SetNeed((NeedType)i, Random.Range(50, 101));
-        }
-
-        m_currentHealth = Random.Range(80, 101);
-
-
-        treeRunner = StartCoroutine(BehaviorTreeRunner());
+        m_currentHealth = Random.Range(80, m_maxHealth);
         m_wanderPoint = new GameObject("Wander point for " + gameObject.name + " id: " + gameObject.GetInstanceID());
         m_behaviorTreeTick = new WaitForSeconds(BEHAVIOR_TREE_UPDATE_RATE);
     }

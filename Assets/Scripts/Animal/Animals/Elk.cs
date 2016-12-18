@@ -14,6 +14,16 @@ public class Elk : NonWolf {
         m_strength = AnimalStrength.Strong;
         CarcassQnt = GlobalVars.ElkCarcassQnt;
         InitValues();
+
+        m_needs.Initialize(this);
+        for (int i = 0; i < (int)NeedType.NEED_COUNT; i++)
+        {
+            m_needs.SetNeed((NeedType)i, Random.Range(50, 101));
+        }
+
+        m_detectionModule.Initialize(this);
+        m_movementModule.Initialize(this);
+        m_behaviorTree = CreateBehaviorTree();
         treeRunner = StartCoroutine(BehaviorTreeRunner());
     }
     
@@ -152,6 +162,7 @@ public class Elk : NonWolf {
 
         //fight behavior
         BaseRoutine fight_SequenceContainer = treeBuilder
+            .BeginSequence("Combat")
             .AddAction("Find wolf with lowest hp", () => {
                 int weakest = 101;
                 foreach (Collider t in m_detectionModule.DetectedGameObjects) {
@@ -165,15 +176,19 @@ public class Elk : NonWolf {
             })
             .AttachTree(moveToTarget_SequenceContainer)
             .AttachTree(attack_SequenceContainer)
-            .AddAction("Win", () => RoutineState.Succeded);
+            .AddAction("Win", () => RoutineState.Succeded)
+            .FinishNode();
 
         //stay behavior
         BaseRoutine stayAndWait_SequenceContainer = treeBuilder
-            .AddAction("Wait", () => {
+            .BeginSequence("Wait timer")
+            .AddAction("Wait", () =>
+            {
                 WaitTime = 1; //#animTime regular wait time
                 needs.ModNeed(NeedType.Energy, GlobalVars.RestEnIncrease);
                 return RoutineState.Succeded;
-            });
+            })
+            .FinishNode();
 
         //attacked and alone behavior
         BaseRoutine attackedIndividual_SelectorContainer = treeBuilder
@@ -193,31 +208,51 @@ public class Elk : NonWolf {
                                 .BeginCondition("Do I have energy left", () => (needs.GetNeed(NeedType.Energy) > 10))
                                     .AttachTree(runAway_SequenceContainer)
                                 .FinishNode()
+                                .BeginCondition("Out of energy, fight", () => true)
                                 .AttachTree(fight_SequenceContainer) //if not enough energy to run, fight
+                                .FinishNode()
                             .FinishNode()
                         .FinishNode()
+                        .BeginCondition("2 or less wolves", () =>
+                        {
+                            foreach (Collider t in m_detectionModule.DetectedGameObjects)
+                            {
+                                if (t.tag == "Wolf")
+                                {
+                                    return true;
+                                }
+                            }
+                            return false; // if no wolves
+                        })
                         .AttachTree(fight_SequenceContainer) //if wolves are not too many, fight
+                        .FinishNode()
                     .FinishNode()
                 .FinishNode()
                 .BeginCondition("Are wolves not attacking me", () => (m_currentHealth > 60))
                     .AttachTree(stayAndWait_SequenceContainer)
                 .FinishNode()
+                .BeginCondition("Is brave enough", () => Bravery > 0)
                 .AttachTree(fight_SequenceContainer) //if wolves are attacking although bravery is not 0, fight (with increased damage)
+                .FinishNode()
             .FinishNode();
 
         //attacked behavior
         BaseRoutine attackedBehavior_SequenceContainer = treeBuilder
             .BeginSelector("Attacked action")
-                .BeginCondition("Am I in a group", () => (m_group.GetSize() > 1))
+                .BeginCondition("Am I in a group", () => (m_group!=null))
                     .BeginSelector("Stay or flee group")
                         //am I healthy enough to stay in the herd
                         .BeginCondition("Am I unharmed and not tired", () => (m_currentHealth > 79 && needs.GetNeed(NeedType.Energy) > 10))
                             .AttachTree(groupRunAway_SequenceContainer)
                         .FinishNode()
+                        .BeginCondition("Unhealthy", () => true)
                         .AttachTree(attackedIndividual_SelectorContainer)
+                        .FinishNode()
                     .FinishNode()
                 .FinishNode()
+                .BeginCondition("Not in group", () => true)
                 .AttachTree(attackedIndividual_SelectorContainer)
+                .FinishNode()
             .FinishNode();
 
         //the executed behavior tree
@@ -243,8 +278,8 @@ public class Elk : NonWolf {
         //the actual tree
         treeBuilder
             .BeginSelector("To do or not to do")
+            .BeginCondition("Do I have to wait", () => (WaitTime > 0.001f))
                 .BeginSequence("Waiting")
-                    .BeginCondition("Do I have to wait", () => (WaitTime > 0.001f))
                     .AddAction("Reduce wait time", () => {
                         WaitTime -= BEHAVIOR_TREE_UPDATE_RATE;
                         if (WaitTime < 0) WaitTime = 0;
@@ -252,7 +287,9 @@ public class Elk : NonWolf {
                     })
                     .FinishNode()
                 .FinishNode()
+                .BeginCondition("Dont wait", () => true)
                 .AttachTree(btTree)
+                .FinishNode()
             .FinishNode();
 
         return treeBuilder;
@@ -260,13 +297,22 @@ public class Elk : NonWolf {
 
     private void OnEnable()
     {
+        m_detectionModule.Initialize(this);
+        m_movementModule.Initialize(this);
         if (treeRunner == null)
             treeRunner = StartCoroutine(BehaviorTreeRunner());
     }
 
+    private void OnDrawGizmosSelected()
+    {
+        m_detectionModule.DrawGizmos();
+        m_movementModule.DrawGizmos();
+    }
 
     private void OnDisable()
     {
+        m_detectionModule.Shutdown();
+        m_movementModule.Shutdown();
         treeRunner = null;
     }
 
