@@ -20,7 +20,6 @@ public class PreySpawner : Singleton<PreySpawner> {
 
     private void NextPoint() {
         spCounter++;
-        Debug.Log(spCounter);
         if (spCounter > SpawnPoints.Count - 1) spCounter = 0;
     }
 
