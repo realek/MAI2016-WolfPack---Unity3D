@@ -8,11 +8,13 @@ public class WolfPackManager : Singleton<WolfPackManager> {
     public GameObject initFWolf;
     public GameObject restArea;
     public List<GameObject> packList;
+    public Dictionary<Wolf, GameObject> targetDict = new Dictionary<Wolf, GameObject>(); //wolf->target
 
     // Use this for initialization
     void Start () {
-		
-	}
+        targetDict.Add(initMWolf.GetComponent<Wolf>(), initFWolf);
+
+    }
 
     public void RegisterPack() {
         AnimalGroupManager.Instance.RegisterWolfPack(initMWolf.GetComponent<Wolf>(), initFWolf.GetComponent<Wolf>());

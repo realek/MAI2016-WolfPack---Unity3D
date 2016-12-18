@@ -192,8 +192,38 @@ public class WolfAIController : MonoBehaviour {
             })
             .FinishNode();
         #endregion
-        
-#region FindMate
+
+
+        #region DedicatedWander
+        //wander behavior
+        BaseRoutine dedicatedWander_SequenceContainer = treeBuilder
+            .BeginSequence("Wander Sequence")
+            .AddAction("Select Random Point On Navmesh", () => {
+                if (!m_wandering) {
+                    m_wandering = true;
+                    NavMeshHit hit;
+                    Vector3 source = transform.position + (Random.insideUnitSphere * m_detectionModule.DetectionAreaRadius);
+                    Vector3 halfDistToTarget = (transform.position - WolfPackManager.Instance.targetDict[m_wolf].transform.position)/2;
+                    if (NavMesh.SamplePosition(source, out hit, m_detectionModule.DetectionAreaRadius, -1)) {
+                        m_wanderPoint.transform.position = hit.position + halfDistToTarget;
+                        m_currentTarget = m_wanderPoint;
+                    } else {
+                        Debug.Log("Failed to get a dedicated random point on navmesh with source at" + source + "hit at: " + hit.position);
+                        return RoutineState.Failed;
+                    }
+                }
+                return RoutineState.Succeded;
+            })
+            .AttachTree(moveToTarget_SequenceContainer)
+            .AddAction("EndWander", () => {
+                m_currentTarget = null;
+                m_wandering = false;
+                return RoutineState.Succeded;
+            })
+            .FinishNode();
+        #endregion
+
+        #region FindMate
         //before that check if wolf is not in a pack
         BaseRoutine findMate_SequenceContainer = treeBuilder
             .BeginSelector("What is my gender")
@@ -201,9 +231,8 @@ public class WolfAIController : MonoBehaviour {
                     if (m_wolf.gender == AnimalGender.Male) return true;
                     return false;
                 })
-                    .AddAction("", () => {
-                        return RoutineState.Succeded;
-                    })
+                    //.AddRepeater("go to female in 4 steps", 4)
+                    .AttachTree(dedicatedWander_SequenceContainer)
                 .FinishNode()
             .FinishNode()
             ;
