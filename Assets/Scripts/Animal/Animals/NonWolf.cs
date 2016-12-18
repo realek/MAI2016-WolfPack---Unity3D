@@ -57,7 +57,7 @@ public class NonWolf : Animal {
         m_behaviorTreeTick = new WaitForSeconds(BEHAVIOR_TREE_UPDATE_RATE);
     }
 
-    IEnumerator BehaviorTreeRunner() {
+    protected IEnumerator BehaviorTreeRunner() {
         if (m_behaviorTree == null)
             yield break;
         m_behaviorTree.Start();
@@ -68,19 +68,7 @@ public class NonWolf : Animal {
     }
 
 
-    protected void OnEnable() {
-        if (treeRunner == null)
-            treeRunner = StartCoroutine(BehaviorTreeRunner());
-    }
 
-
-    protected void OnDisable() {
-        treeRunner = null;
-    }
-
-    protected void OnDestroy() {
-        Destroy(m_wanderPoint);
-    }
 
     protected virtual BaseRoutine CreateBehaviorTree() {
         return m_behaviorTree;

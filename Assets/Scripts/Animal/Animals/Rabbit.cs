@@ -7,6 +7,7 @@ public class Rabbit : NonWolf {
         InitValues();
         m_strength = AnimalStrength.Weak;
         CarcassQnt = GlobalVars.RabbitCarcassQnt;
+        treeRunner = StartCoroutine(BehaviorTreeRunner());
     }
 
     protected override BaseRoutine CreateBehaviorTree() {
@@ -15,4 +16,23 @@ public class Rabbit : NonWolf {
 
         return treeBuilder;
     }
+
+
+    private void OnEnable()
+    {
+        treeRunner = StartCoroutine(BehaviorTreeRunner());
+    }
+
+
+    private void OnDisable()
+    {
+        treeRunner = null;
+    }
+
+    private void OnDestroy()
+    {
+        Destroy(m_wanderPoint);
+    }
+
+
 }
