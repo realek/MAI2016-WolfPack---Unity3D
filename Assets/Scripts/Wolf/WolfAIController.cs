@@ -193,8 +193,18 @@ public class WolfAIController : MonoBehaviour {
         #endregion
 
 #region FindMate
-
+        //before that check if wolf is not in a pack
         BaseRoutine findMate_SequenceContainer = treeBuilder
+            .BeginSelector("What is my gender")
+                .BeginCondition("Am I male", () => {
+                    if (m_wolf.gender == AnimalGender.Male) return true;
+                    return false;
+                })
+                    .AddAction("", () => {
+                        return RoutineState.Succeded;
+                    })
+                .FinishNode()
+            .FinishNode()
             ;
 #endregion
 
