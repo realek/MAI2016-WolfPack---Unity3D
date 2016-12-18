@@ -82,6 +82,13 @@ public class Animal : MonoBehaviour {
     public float WaitTime;
 
     protected int CarcassQnt;
+    public int atkDmg;
+
+
+    public int dmg1;
+    public int dmg2;
+    public int dmg3;
+    public int dmg4;
 
     /// <summary>
     /// Sets current health to max health

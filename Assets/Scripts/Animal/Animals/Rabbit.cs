@@ -5,17 +5,17 @@ using UnityEngine.UI;
 
 public class Rabbit : NonWolf {
 
-    private int dmg1 = GlobalVars.RabbitAtk1;
-    private int dmg2 = GlobalVars.RabbitAtk2;
-    private int dmg3 = GlobalVars.RabbitAtk3;
-    private int dmg4 = GlobalVars.RabbitAtk4;
-
     public Text status;
 
     void Start() {
         m_strength = AnimalStrength.Weak;
         CarcassQnt = GlobalVars.RabbitCarcassQnt;
         InitValues();
+
+        dmg1 = GlobalVars.RabbitAtk1;
+        dmg2 = GlobalVars.RabbitAtk2;
+        dmg3 = GlobalVars.RabbitAtk3;
+        dmg4 = GlobalVars.RabbitAtk4;
 
         m_needs.Initialize(this, true, 50, 100);
 
