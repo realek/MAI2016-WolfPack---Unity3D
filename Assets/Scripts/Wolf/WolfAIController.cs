@@ -39,24 +39,26 @@ public class WolfAIController : MonoBehaviour {
 
         BehaviorTreeBuilder treeBuilder = new BehaviorTreeBuilder();
 
-
+#region Movement
         BaseRoutine moveToTarget_SequenceContainer = treeBuilder
-    .BeginSequence("Move TO")
-    .AddAction("Movement", () =>
-    {
-        if (m_currentTarget == null || m_currentTarget == gameObject)
-            return RoutineState.Failed;
+        .BeginSequence("Move TO")
+        .AddAction("Movement", () =>
+        {
+            if (m_currentTarget == null || m_currentTarget == gameObject)
+                return RoutineState.Failed;
 
-        m_movementModule.Move(m_currentTarget);
-        if (m_movementModule.reachedTarget && !m_movementModule.unreachableTarget)
-            return RoutineState.Succeded;
-        else if (!m_movementModule.reachedTarget && !m_movementModule.unreachableTarget)
-            return RoutineState.Running;
-        else
-            return RoutineState.Failed;
-    })
-    .FinishNode();
+            m_movementModule.Move(m_currentTarget);
+            if (m_movementModule.reachedTarget && !m_movementModule.unreachableTarget)
+                return RoutineState.Succeded;
+            else if (!m_movementModule.reachedTarget && !m_movementModule.unreachableTarget)
+                return RoutineState.Running;
+            else
+                return RoutineState.Failed;
+        })
+        .FinishNode();
+        #endregion
 
+#region basicNeeds
         //Needs behavior container
         BaseRoutine needsBlock_SelectorContainer = treeBuilder
             .BeginSelector("Needs Selection")
@@ -127,7 +129,9 @@ public class WolfAIController : MonoBehaviour {
             .FinishNode()
             .FinishNode()
             .FinishNode();
+        #endregion
 
+#region Patrol
         //Patrol behavior
         BaseRoutine patrolBehaviorBlock_SequenceContainer = treeBuilder
             .BeginSequence("Patrol Sequence")
@@ -150,7 +154,9 @@ public class WolfAIController : MonoBehaviour {
                  return RoutineState.Succeded;
              })
             .FinishNode();
+        #endregion
 
+#region Wander
         //wander behavior
         BaseRoutine wanderBehavioir_SequenceContainer = treeBuilder
             .BeginSequence("Wander Sequence")
@@ -184,11 +190,13 @@ public class WolfAIController : MonoBehaviour {
                 return RoutineState.Succeded;
             })
             .FinishNode();
+        #endregion
         ////Protect behavior
         //BaseRoutine protectBehaviorBlock_SelectorContainer = treeBuilder
         //    .BeginSelector("Defend Target From")
         //    .FinishNode();
 
+#region Solo
         //Solo behavior container
         BaseRoutine soloBehaviorBlock_SelectorContainer = treeBuilder
             .BeginSelector("Solo behavior")
@@ -223,7 +231,9 @@ public class WolfAIController : MonoBehaviour {
             .AttachTree(wanderBehavioir_SequenceContainer)
             .FinishNode()
             .FinishNode();
+        #endregion
 
+#region PackBehavior
         //Pack behavior container
         BaseRoutine packBehaviorBlock_SequenceContainer = treeBuilder
             .BeginSequence("move with pack")
@@ -233,8 +243,9 @@ public class WolfAIController : MonoBehaviour {
                  return RoutineState.Succeded;
              })
              .FinishNode();
+        #endregion
 
-
+#region Attack
         //***************************************************************
         //ATTACK STUFF
 
@@ -290,6 +301,9 @@ public class WolfAIController : MonoBehaviour {
             .FinishNode();
         //************************************************************************************************************************
 
+        #endregion
+
+#region MainTree
         //return final behavior tree by adding pack and non-pack behaviors
         treeBuilder
             .BeginRepeater("Tree repeater", 0)
@@ -308,6 +322,7 @@ public class WolfAIController : MonoBehaviour {
             .FinishNode()
             .FinishNode()
             .FinishNode();
+#endregion
 
         return treeBuilder;
     }
