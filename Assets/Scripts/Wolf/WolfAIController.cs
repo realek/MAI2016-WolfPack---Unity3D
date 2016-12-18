@@ -16,10 +16,6 @@ public class WolfAIController : MonoBehaviour {
     public bool hasPack;
     private BaseRoutine m_behaviorTree;
     private Wolf m_wolf;
-    public GameObject food;
-    public GameObject drink;
-    public GameObject sleepArea;
-    public Wolf otherWolf;
     public GameObject[] patrolPoints;
     private int currentPatrolPointIDX = -1;
     private GameObject m_currentTarget;
@@ -33,6 +29,9 @@ public class WolfAIController : MonoBehaviour {
     private const float BEHAVIOR_TREE_UPDATE_RATE = 0.2f; // 5 times a second is enough
     private WaitForSeconds m_behaviorTreeTick;
     private Coroutine treeRunner;
+
+    private GameObject sleepArea;
+
     BaseRoutine CreateBehaviorTree()
     {
 
@@ -84,7 +83,7 @@ public class WolfAIController : MonoBehaviour {
             {
                 if (m_wolf.needs.IsNeedTriggered(NeedType.Hunger))
                 {
-                    m_currentTarget = food;
+                    m_currentTarget = sleepArea;
                     return true;
                 }
                 else return false;
@@ -106,7 +105,7 @@ public class WolfAIController : MonoBehaviour {
             {
                 if (m_wolf.needs.IsNeedTriggered(NeedType.Thirst))
                 {
-                    m_currentTarget = drink;
+                    m_currentTarget = sleepArea;
                     return true;
                 }
                 else return false;
@@ -270,7 +269,7 @@ public class WolfAIController : MonoBehaviour {
         m_behaviorTree = CreateBehaviorTree();
         treeRunner = StartCoroutine(BehaviorTreeRunner());
 
-
+        sleepArea = GameObject.FindGameObjectWithTag("RestArea");
     }
 
     private void OnEnable()
