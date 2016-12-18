@@ -18,18 +18,15 @@ public class Elk : NonWolf {
         CarcassQnt = GlobalVars.ElkCarcassQnt;
         InitValues();
 
-        m_needs.Initialize(this);
-        for (int i = 0; i < (int)NeedType.NEED_COUNT; i++)
-        {
-            m_needs.SetNeed((NeedType)i, Random.Range(50, 101));
-        }
+        m_needs.Initialize(this, true,50,100);
+
 
         m_detectionModule.Initialize(this);
         m_movementModule.Initialize(this);
         m_behaviorTree = CreateBehaviorTree();
         treeRunner = StartCoroutine(BehaviorTreeRunner());
     }
-    
+
     protected override BaseRoutine CreateBehaviorTree() {
         BehaviorTreeBuilder treeBuilder = new BehaviorTreeBuilder();
 

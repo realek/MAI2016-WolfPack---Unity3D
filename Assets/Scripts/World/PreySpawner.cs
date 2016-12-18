@@ -14,10 +14,6 @@ public class PreySpawner : Singleton<PreySpawner> {
         AddIndividual(1);
 	}
 
-    private void SetMaxEnergy(GameObject animal) {
-        
-    }
-
     private void NextPoint() {
         spCounter++;
         if (spCounter > SpawnPoints.Count - 1) spCounter = 0;
@@ -41,7 +37,6 @@ public class PreySpawner : Singleton<PreySpawner> {
         NonWolf[] NonWolfArray = new NonWolf[size];
         for (int i = 0; i < size; i++) {
             AllNonWolves.Add(SpawnIndividual(type));
-            SetMaxEnergy(AllNonWolves[AllNonWolves.Count - 1]);
             AllNonWolves[AllNonWolves.Count - 1].transform.position = SpawnPoints[spCounter].transform.position + new Vector3(Random.Range(0, 10), 0f, Random.Range(0, 10));
             NonWolfArray[i] = AllNonWolves[i + count].GetComponent<NonWolf>();
         }
@@ -51,7 +46,6 @@ public class PreySpawner : Singleton<PreySpawner> {
 
     private void AddIndividual(int type) {
         AllNonWolves.Add(SpawnIndividual(type));
-        SetMaxEnergy(AllNonWolves[AllNonWolves.Count - 1]);
         AllNonWolves[AllNonWolves.Count - 1].transform.position = SpawnPoints[spCounter].transform.position + new Vector3(Random.Range(0, 10), 0f, Random.Range(0, 10));
         NextPoint();
     }

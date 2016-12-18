@@ -81,10 +81,14 @@ public class Needs
     private WaitForSeconds m_minDecayYield;
     private float m_minDecayRate;
     /// <summary>
-    /// Used to initializes the needs and provides the owner of the instance
+    /// Used to initializes the needs and provides the owner of the instance, if randomStart is set to true, the min max randoms will be used.
+    /// The min / max parameters can also be provided they must be between 0 and 100.
     /// </summary>
     /// <param name="owner"></param>
-    public void Initialize(MonoBehaviour owner)
+    /// <param name="randomStart"></param>
+    /// <param name="min"></param>
+    /// <param name="max"></param>
+    public void Initialize(MonoBehaviour owner, bool randomStart = false, float min = MIN_NEED_VALUE, float max = MAX_NEED_VALUE)
     {
         if (!m_init)
         {
@@ -118,6 +122,15 @@ public class Needs
             {
                 throw new System.Exception("Missing one or more needs from the list, current need count: "
                     +m_needs.Count+" expected: "+(int)NeedType.NEED_COUNT);
+            }
+
+
+            if(randomStart)
+            {
+               foreach(KeyValuePair<NeedType,Need> need in m_needs)
+                {
+                    need.Value.value = Random.Range(min, max);
+                }
             }
 
             m_executor = m_owner.StartCoroutine(NeedsTicker());
