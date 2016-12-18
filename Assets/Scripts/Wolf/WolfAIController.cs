@@ -272,10 +272,10 @@ public class WolfAIController : MonoBehaviour {
         //fight behavior
         BaseRoutine fight_SequenceContainer = treeBuilder
             .BeginSequence("Combat")
-            .AddAction("Find wolf with lowest hp", () => {
+            .AddAction("Find prey with lowest hp", () => {
                 int weakest = 101;
                 foreach (Collider t in m_detectionModule.DetectedGameObjects) {
-                    var m_wolf = t.GetComponent<Wolf>();
+                    var m_wolf = t.GetComponent<NonWolf>();
                     if (m_wolf && m_wolf.m_currentHealth < weakest) {
                         weakest = m_wolf.m_currentHealth;
                         m_currentTarget = m_wolf.gameObject;
