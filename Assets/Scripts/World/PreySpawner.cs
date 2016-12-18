@@ -12,7 +12,7 @@ public class PreySpawner : Singleton<PreySpawner> {
         //###TODO add more animals
 
         foreach (GameObject t in AllNonWolves) {
-	        t.transform.position = new Vector3(500 + Random.Range(0, 50), 50, 500 + Random.Range(0, 50));
+	        t.transform.position = new Vector3(500 + Random.Range(0, 50), 5f, 500 + Random.Range(0, 50));
 	    }
 	}
 
