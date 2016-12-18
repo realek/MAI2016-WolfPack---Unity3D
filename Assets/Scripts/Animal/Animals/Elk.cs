@@ -14,6 +14,7 @@ public class Elk : NonWolf {
         m_strength = AnimalStrength.Strong;
         CarcassQnt = GlobalVars.ElkCarcassQnt;
         InitValues();
+        treeRunner = StartCoroutine(BehaviorTreeRunner());
     }
     
     protected override BaseRoutine CreateBehaviorTree() {
@@ -255,5 +256,22 @@ public class Elk : NonWolf {
             .FinishNode();
 
         return treeBuilder;
+    }
+
+    private void OnEnable()
+    {
+        if (treeRunner == null)
+            treeRunner = StartCoroutine(BehaviorTreeRunner());
+    }
+
+
+    private void OnDisable()
+    {
+        treeRunner = null;
+    }
+
+    private void OnDestroy()
+    {
+        Destroy(m_wanderPoint);
     }
 }
