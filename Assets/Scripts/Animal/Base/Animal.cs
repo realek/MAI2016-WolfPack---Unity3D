@@ -96,7 +96,6 @@ public class Animal : MonoBehaviour {
     }
 
     protected void InitAge(int value) {
-        Debug.Log("Age: " + (value * value + 1));
         SetAge(value * value + 1); // 0 is 1;   1 is 2;   2 is 5;   3 is 10
     }
 

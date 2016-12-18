@@ -4,27 +4,31 @@ using UnityEngine;
 public class PreySpawner : Singleton<PreySpawner> {
     
     public List<GameObject> SpawnPoints;
+
     private List<GameObject> AllNonWolves = new List<GameObject>();
+    private int spCounter = 0;
 
 	// Use this for initialization
 	void Start () {
-
         AddHerd(1, 4);
-	    AddIndividual(1);
-        //###TODO add more animals
-
-        foreach (GameObject t in AllNonWolves) {
-	        t.transform.position = SpawnPoints[0].transform.position + new Vector3(Random.Range(0, 10), 0f, Random.Range(0, 10));
-        }
+        AddIndividual(1);
 	}
+
+    private void NextPoint() {
+        spCounter++;
+        Debug.Log(spCounter);
+        if (spCounter > SpawnPoints.Count - 1) spCounter = 0;
+    }
 
     private void AddHerd(int type, int size) {
         int count = AllNonWolves.Count;
         NonWolf[] NonWolfArray = new NonWolf[size];
         for (int i = 0; i < size; i++) {
             AllNonWolves.Add(SpawnIndividual(type));
+            AllNonWolves[AllNonWolves.Count - 1].transform.position = SpawnPoints[spCounter].transform.position + new Vector3(Random.Range(0, 10), 0f, Random.Range(0, 10));
             NonWolfArray[i] = AllNonWolves[i + count].GetComponent<NonWolf>();
         }
+        NextPoint();
         AnimalGroupManager.Instance.RegisterHerd(NonWolfArray);
     }
 
@@ -52,6 +56,8 @@ public class PreySpawner : Singleton<PreySpawner> {
 
     private void AddIndividual(int type) {
         AllNonWolves.Add(SpawnIndividual(type));
+        AllNonWolves[AllNonWolves.Count - 1].transform.position = SpawnPoints[spCounter].transform.position + new Vector3(Random.Range(0, 10), 0f, Random.Range(0, 10));
+        NextPoint();
     }
 
     private GameObject SpawnIndividual(int type) {
