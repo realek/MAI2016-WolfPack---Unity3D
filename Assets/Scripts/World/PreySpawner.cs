@@ -59,7 +59,7 @@ public class PreySpawner : Singleton<PreySpawner> {
             case 0:
                 return (GameObject) Instantiate((Resources.Load("Rabbit")));
             case 1:
-                return (GameObject) Instantiate((Resources.Load("Elk")));
+                return (GameObject) Instantiate((Resources.Load("ElkTemp")));
             case 2:
                 return (GameObject) Instantiate((Resources.Load("Coyote")));
             default:

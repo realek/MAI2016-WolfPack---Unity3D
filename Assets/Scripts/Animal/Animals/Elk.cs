@@ -2,6 +2,7 @@
 using CustomConsts;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UI;
 
 public class Elk : NonWolf {
     
@@ -9,6 +10,8 @@ public class Elk : NonWolf {
     private int dmg2 = GlobalVars.ElkAtk2;
     private int dmg3 = GlobalVars.ElkAtk3;
     private int dmg4 = GlobalVars.ElkAtk4;
+
+    public Text status;
 
     void Start () {
         m_strength = AnimalStrength.Strong;
@@ -57,6 +60,7 @@ public class Elk : NonWolf {
                         if (NavMesh.SamplePosition(source, out hit, m_detectionModule.DetectionAreaRadius, -1)) {
                             m_wanderPoint.transform.position = hit.position;
                             m_currentTarget = m_wanderPoint;
+                            status.text = "Wandering";
                         } else {
                             Debug.Log("Failed to get random point on navmesh with source at" + source + "hit at: " + hit.position);
                             return RoutineState.Failed;
@@ -79,7 +83,8 @@ public class Elk : NonWolf {
             .BeginSequence("Return to group")
                 .AddAction("Select herd location", () => {
                     m_wanderPoint.transform.position = GetGroupCenter();
-                    m_currentTarget = m_wanderPoint; 
+                    m_currentTarget = m_wanderPoint;
+                    status.text = "GoToHerd";
                     return RoutineState.Succeded;
                 })
                 .AttachTree(moveToTarget_SequenceContainer)
@@ -104,6 +109,7 @@ public class Elk : NonWolf {
                     m_wanderPoint.transform.position = new Vector3(2*transform.position.x - m_currentTarget.transform.position.x,
                         transform.position.y, 2*transform.position.z - m_currentTarget.transform.position.z);
                     m_currentTarget = m_wanderPoint;
+                    status.text = "RunAwayFromWolf";
                     return RoutineState.Succeded;
                 })
                 .AttachTree(moveToTarget_SequenceContainer)
@@ -125,6 +131,7 @@ public class Elk : NonWolf {
 
                     m_wanderPoint.transform.position = new Vector3(xPos, transform.position.y, zPos);
                     m_currentTarget = m_wanderPoint;
+                    status.text = "GroupRunAway";
                     return RoutineState.Succeded;
                 })
                 .AttachTree(moveToTarget_SequenceContainer)
@@ -156,6 +163,7 @@ public class Elk : NonWolf {
                 .AddAction("Cooldown", () => {
                     if (m_currentHealth > 30) WaitTime = 1; //TODO #animTime
                     else WaitTime = 2;
+                    status.text = "Attacking";
                     return RoutineState.Succeded;
                 })
             .FinishNode();
@@ -172,6 +180,7 @@ public class Elk : NonWolf {
                         m_currentTarget = m_wolf.gameObject;
                     }
                 }
+                status.text = "ChoosingAtkTarget";
                 return RoutineState.Succeded;
             })
             .AttachTree(moveToTarget_SequenceContainer)
@@ -182,8 +191,8 @@ public class Elk : NonWolf {
         //stay behavior
         BaseRoutine stayAndWait_SequenceContainer = treeBuilder
             .BeginSequence("Wait timer")
-            .AddAction("Wait", () =>
-            {
+            .AddAction("Wait", () => {
+                status.text = "Waiting";
                 WaitTime = 1; //#animTime regular wait time
                 needs.ModNeed(NeedType.Energy, GlobalVars.RestEnIncrease);
                 return RoutineState.Succeded;
@@ -205,7 +214,7 @@ public class Elk : NonWolf {
                             return (wolfCount > 2);
                         })
                             .BeginSelector("Can I run away")
-                                .BeginCondition("Do I have energy left", () => (needs.GetNeed(NeedType.Energy) > 10))
+                                .BeginCondition("Do I have energy left", () => (needs.GetNeed(NeedType.Energy) > 30))
                                     .AttachTree(runAway_SequenceContainer)
                                 .FinishNode()
                                 .BeginCondition("Out of energy, fight", () => true)
