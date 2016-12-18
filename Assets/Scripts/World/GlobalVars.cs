@@ -18,6 +18,12 @@
         public const int ElkAtk2 = 2;
         public const int ElkAtk3 = 6;
         public const int ElkAtk4 = 4;
+        
+        public const float RabbitHerdRadius = 200f; //max distance before a wandering elk goes back to the center
+        public const int RabbitAtk1 = 0;
+        public const int RabbitAtk2 = 2;
+        public const int RabbitAtk3 = 6;
+        public const int RabbitAtk4 = 4;
     }
 }
 

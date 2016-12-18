@@ -4,9 +4,6 @@ using System.Collections;
 public class NonWolf : Animal {
 
     protected int Bravery = 0;        //sets how many wolves (and taunts by wolves) are needed to make it run away instead of standing its ground
-    //protected float NormalSpeed = 1f; //running speed
-    //protected float SpeedDrop = 0.5f; //how much speed it loses when running on the RoughTerrain area
-
     
     [SerializeField]
     protected AIDetectionModule m_detectionModule;
@@ -42,9 +39,6 @@ public class NonWolf : Animal {
             yield return m_behaviorTreeTick;
         }
     }
-
-
-
 
     protected virtual BaseRoutine CreateBehaviorTree() {
         return m_behaviorTree;

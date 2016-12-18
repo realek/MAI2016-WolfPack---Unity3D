@@ -161,7 +161,7 @@ public class Elk : NonWolf {
                     return RoutineState.Succeded;
                 })
                 .AddAction("Cooldown", () => {
-                    if (m_currentHealth > 30) WaitTime = 1; //TODO #animTime
+                    if (m_currentHealth > 30) WaitTime = 1;
                     else WaitTime = 2;
                     status.text = "Attacking";
                     return RoutineState.Succeded;
@@ -193,7 +193,7 @@ public class Elk : NonWolf {
             .BeginSequence("Wait timer")
             .AddAction("Wait", () => {
                 status.text = "Waiting";
-                WaitTime = 1; //#animTime regular wait time
+                WaitTime = 1;
                 needs.ModNeed(NeedType.Energy, GlobalVars.RestEnIncrease);
                 return RoutineState.Succeded;
             })
