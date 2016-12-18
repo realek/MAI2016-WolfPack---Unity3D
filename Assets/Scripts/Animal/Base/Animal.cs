@@ -95,16 +95,34 @@ public class Animal : MonoBehaviour {
         return m_gender == AnimalGender.Male ? AnimalGender.Female : AnimalGender.Male;
     }
 
-    protected void UpdateAge() {
-        m_numeric_age++;
-        SetAge(m_numeric_age);
+    protected void InitAge(int value) {
+        Debug.Log("Age: " + (value * value + 1));
+        SetAge(value * value + 1); // 0 is 1;   1 is 2;   2 is 5;   3 is 10
     }
 
     protected void SetAge(int age) {
-        if (m_numeric_age < 2) m_age = AnimalAge.Infant;
-        else if (m_numeric_age < 4) m_age = AnimalAge.YoungAdult;
-        else if (m_numeric_age < 8) m_age = AnimalAge.Adult;
-        else m_age = AnimalAge.Elder;
+        m_numeric_age = age;
+        if (age < 2) {
+            m_age = AnimalAge.Infant;
+            transform.localScale = new Vector3(.5f,.5f,.5f);
+        }
+        else if (age < 5) {
+            m_age = AnimalAge.YoungAdult;
+            transform.localScale = new Vector3(.8f, .8f, .8f);
+        }
+        else if (age < 8) {
+            m_age = AnimalAge.Adult;
+            transform.localScale = new Vector3(1f, 1f, 1f);
+        }
+        else {
+            m_age = AnimalAge.Elder;
+            transform.localScale = new Vector3(1.2f, 1.2f, 1.2f);
+        }
+    }
+
+    public void UpdateAge() {
+        m_numeric_age++;
+        SetAge(m_numeric_age);
     }
 
     public void DealtDmg(int dmg) {

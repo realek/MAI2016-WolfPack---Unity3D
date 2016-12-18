@@ -26,25 +26,9 @@ public class NonWolf : Animal {
     protected WaitForSeconds m_behaviorTreeTick;
 
     protected void InitValues() {
-        switch ((int)(Random.value * 100) % 4) {
-            case 0:
-                m_age = AnimalAge.Infant;
-                break;
-            case 1:
-                m_age = AnimalAge.YoungAdult;
-                break;
-            case 2:
-                m_age = AnimalAge.Adult;
-                break;
-            case 3:
-                m_age = AnimalAge.Elder;
-                break;
-            default:
-                Debug.Log("Impossible NonWolf age");
-                break;
-        }
 
-        m_currentHealth = Random.Range(80, m_maxHealth);
+        InitAge(Random.Range(0,4));
+        m_currentHealth = Random.Range(70, m_maxHealth);
         m_wanderPoint = new GameObject("Wander point for " + gameObject.name + " id: " + gameObject.GetInstanceID());
         m_behaviorTreeTick = new WaitForSeconds(BEHAVIOR_TREE_UPDATE_RATE);
     }
