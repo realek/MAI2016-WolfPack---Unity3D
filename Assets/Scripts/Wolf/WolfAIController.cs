@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.AI;
 using CustomConsts;
+using System.Linq;
 
 [RequireComponent(typeof(Wolf))]
 public class WolfAIController : MonoBehaviour {
@@ -182,10 +183,24 @@ public class WolfAIController : MonoBehaviour {
                 return RoutineState.Succeded;
             })
             .FinishNode();
-        ////Protect behavior
-        //BaseRoutine protectBehaviorBlock_SelectorContainer = treeBuilder
-        //    .BeginSelector("Defend Target From")
-        //    .FinishNode();
+
+
+        //Get target and move to behavior
+        BaseRoutine chaseBehaviorBlock_SelectorContainer = treeBuilder
+            .BeginSequence("Chase target")
+            .AddAction("Is there a target target that we can chase", () => 
+            {
+                var result = m_detectionModule.DetectedGameObjects.Where(entity => entity.tag == "Rabbit" || entity.tag == "Elk").ToList();
+                if (result.Count == 0) return RoutineState.Failed;
+                else
+                {
+                    m_currentTarget = (result.OrderBy(entity => (entity.transform.position - transform.position).sqrMagnitude).ToList()[0]).gameObject;
+                    return RoutineState.Succeded;
+                }
+
+            })
+            .AttachTree(moveToTarget_SequenceContainer)
+            .FinishNode();
 
         //Solo behavior container
         BaseRoutine soloBehaviorBlock_SelectorContainer = treeBuilder
