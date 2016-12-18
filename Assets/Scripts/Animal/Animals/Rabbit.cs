@@ -17,10 +17,7 @@ public class Rabbit : NonWolf {
         CarcassQnt = GlobalVars.RabbitCarcassQnt;
         InitValues();
 
-        m_needs.Initialize(this);
-        for (int i = 0; i < (int)NeedType.NEED_COUNT; i++) {
-            m_needs.SetNeed((NeedType)i, Random.Range(50, 101));
-        }
+        m_needs.Initialize(this, true, 50, 100);
 
         m_detectionModule.Initialize(this);
         m_movementModule.Initialize(this);

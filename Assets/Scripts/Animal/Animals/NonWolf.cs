@@ -25,7 +25,7 @@ public class NonWolf : Animal {
     protected void InitValues() {
 
         InitAge(Random.Range(0,4));
-        m_currentHealth = Random.Range(70, m_maxHealth);
+        m_currentHealth = Random.Range(70, m_maxHealth + 1);
         m_wanderPoint = new GameObject("Wander point for " + gameObject.name + " id: " + gameObject.GetInstanceID());
         m_behaviorTreeTick = new WaitForSeconds(BEHAVIOR_TREE_UPDATE_RATE);
     }
