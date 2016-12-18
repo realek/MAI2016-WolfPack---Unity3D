@@ -5,11 +5,6 @@ using UnityEngine.AI;
 using UnityEngine.UI;
 
 public class Elk : NonWolf {
-    
-    private int dmg1 = GlobalVars.ElkAtk1;
-    private int dmg2 = GlobalVars.ElkAtk2;
-    private int dmg3 = GlobalVars.ElkAtk3;
-    private int dmg4 = GlobalVars.ElkAtk4;
 
     public Text status;
 
@@ -17,6 +12,11 @@ public class Elk : NonWolf {
         m_strength = AnimalStrength.Strong;
         CarcassQnt = GlobalVars.ElkCarcassQnt;
         InitValues();
+
+        dmg1 = GlobalVars.ElkAtk1;
+        dmg2 = GlobalVars.ElkAtk2;
+        dmg3 = GlobalVars.ElkAtk3;
+        dmg4 = GlobalVars.ElkAtk4;
 
         m_needs.Initialize(this, true,50,100);
 
@@ -136,7 +136,7 @@ public class Elk : NonWolf {
 
         //deal damage
         BaseRoutine attack_SequenceContainer = treeBuilder
-            .BeginSequence("Run away from wolves")
+            .BeginSequence("Attack wolves")
                 .AddAction("Animate and deal damage", () => {
                     if (m_currentTarget == null || m_currentTarget == gameObject || m_currentTarget.GetComponent<Animal>() == null)
                         return RoutineState.Failed;

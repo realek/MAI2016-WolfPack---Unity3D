@@ -15,7 +15,6 @@ public class NonWolf : Animal {
     protected GameObject m_wanderPoint;
     protected GameObject m_currentTarget;
     protected AnimalGroup m_group;
-    protected int atkDmg;
 
     protected BaseRoutine m_behaviorTree;
     protected Coroutine treeRunner;

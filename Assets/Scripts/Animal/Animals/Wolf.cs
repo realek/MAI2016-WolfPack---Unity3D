@@ -29,6 +29,11 @@ public class Wolf : Animal {
 
         Heal();
         m_needs.Initialize(this);
+
+        dmg1 = GlobalVars.WolfAtk1;
+        dmg2 = GlobalVars.WolfAtk2;
+        dmg3 = GlobalVars.WolfAtk3;
+        dmg4 = GlobalVars.WolfAtk4;
         m_strength = AnimalStrength.Strong;
         CarcassQnt = GlobalVars.WolfCarcassQnt;
 

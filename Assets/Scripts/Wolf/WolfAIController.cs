@@ -4,12 +4,14 @@ using System.Collections.Generic;
 using UnityEngine.AI;
 using CustomConsts;
 using System.Linq;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(Wolf))]
 public class WolfAIController : MonoBehaviour {
 
 
-
+    [SerializeField]
+    private Text status;
     [SerializeField]
     private AIDetectionModule m_detectionModule;
     [SerializeField]
@@ -38,24 +40,26 @@ public class WolfAIController : MonoBehaviour {
 
         BehaviorTreeBuilder treeBuilder = new BehaviorTreeBuilder();
 
-
+#region Movement
         BaseRoutine moveToTarget_SequenceContainer = treeBuilder
-    .BeginSequence("Move TO")
-    .AddAction("Movement", () =>
-    {
-        if (m_currentTarget == null || m_currentTarget == gameObject)
-            return RoutineState.Failed;
+        .BeginSequence("Move TO")
+        .AddAction("Movement", () =>
+        {
+            if (m_currentTarget == null || m_currentTarget == gameObject)
+                return RoutineState.Failed;
 
-        m_movementModule.Move(m_currentTarget);
-        if (m_movementModule.reachedTarget && !m_movementModule.unreachableTarget)
-            return RoutineState.Succeded;
-        else if (!m_movementModule.reachedTarget && !m_movementModule.unreachableTarget)
-            return RoutineState.Running;
-        else
-            return RoutineState.Failed;
-    })
-    .FinishNode();
+            m_movementModule.Move(m_currentTarget);
+            if (m_movementModule.reachedTarget && !m_movementModule.unreachableTarget)
+                return RoutineState.Succeded;
+            else if (!m_movementModule.reachedTarget && !m_movementModule.unreachableTarget)
+                return RoutineState.Running;
+            else
+                return RoutineState.Failed;
+        })
+        .FinishNode();
+        #endregion
 
+#region basicNeeds
         //Needs behavior container
         BaseRoutine needsBlock_SelectorContainer = treeBuilder
             .BeginSelector("Needs Selection")
@@ -126,7 +130,9 @@ public class WolfAIController : MonoBehaviour {
             .FinishNode()
             .FinishNode()
             .FinishNode();
+        #endregion
 
+#region Patrol
         //Patrol behavior
         BaseRoutine patrolBehaviorBlock_SequenceContainer = treeBuilder
             .BeginSequence("Patrol Sequence")
@@ -149,7 +155,9 @@ public class WolfAIController : MonoBehaviour {
                  return RoutineState.Succeded;
              })
             .FinishNode();
+        #endregion
 
+#region Wander
         //wander behavior
         BaseRoutine wanderBehavioir_SequenceContainer = treeBuilder
             .BeginSequence("Wander Sequence")
@@ -183,8 +191,9 @@ public class WolfAIController : MonoBehaviour {
                 return RoutineState.Succeded;
             })
             .FinishNode();
+        #endregion
 
-
+        #region Chase
         //Get target and move to behavior
         BaseRoutine chaseBehaviorBlock_SelectorContainer = treeBuilder
             .BeginSequence("Chase target")
@@ -201,7 +210,14 @@ public class WolfAIController : MonoBehaviour {
             })
             .AttachTree(moveToTarget_SequenceContainer)
             .FinishNode();
+        #endregion
 
+        #region FindMate
+
+        BaseRoutine findMate_SequenceContainer = treeBuilder;
+#endregion
+
+        #region Solo
         //Solo behavior container
         BaseRoutine soloBehaviorBlock_SelectorContainer = treeBuilder
             .BeginSelector("Solo behavior")
@@ -236,7 +252,9 @@ public class WolfAIController : MonoBehaviour {
             .AttachTree(wanderBehavioir_SequenceContainer)
             .FinishNode()
             .FinishNode();
+        #endregion
 
+#region PackBehavior
         //Pack behavior container
         BaseRoutine packBehaviorBlock_SequenceContainer = treeBuilder
             .BeginSequence("move with pack")
@@ -246,7 +264,67 @@ public class WolfAIController : MonoBehaviour {
                  return RoutineState.Succeded;
              })
              .FinishNode();
+        #endregion
 
+#region Attack
+        //***************************************************************
+        //ATTACK STUFF
+
+        //deal damage
+        BaseRoutine attack_SequenceContainer = treeBuilder
+            .BeginSequence("Attack Prey")
+                .AddAction("Animate and deal damage", () => {
+                    if (m_currentTarget == null || m_currentTarget == gameObject || m_currentTarget.GetComponent<Animal>() == null)
+                        return RoutineState.Failed;
+                    switch (m_wolf.age) {
+                        case AnimalAge.YoungAdult:
+                            m_wolf.atkDmg = m_wolf.dmg2;
+                            break;
+                        case AnimalAge.Adult:
+                            m_wolf.atkDmg = m_wolf.dmg3;
+                            break;
+                        case AnimalAge.Elder:
+                            m_wolf.atkDmg = m_wolf.dmg4;
+                            break;
+                        default:
+                            m_wolf.atkDmg = m_wolf.dmg1;
+                            break;
+                    }
+                    m_currentTarget.GetComponent<Animal>().DealtDmg(m_wolf.atkDmg);
+                    return RoutineState.Succeded;
+                })
+                .AddAction("Cooldown", () => {
+                    if (m_wolf.m_currentHealth > 30) m_wolf.WaitTime = 1;
+                    else m_wolf.WaitTime = 2;
+                    status.text = "Attacking";
+                    return RoutineState.Succeded;
+                })
+            .FinishNode();
+
+        //fight behavior
+        BaseRoutine fight_SequenceContainer = treeBuilder
+            .BeginSequence("Combat")
+            .AddAction("Find prey with lowest hp", () => {
+                int weakest = 101;
+                foreach (Collider t in m_detectionModule.DetectedGameObjects) {
+                    var m_wolf = t.GetComponent<NonWolf>();
+                    if (m_wolf && m_wolf.m_currentHealth < weakest) {
+                        weakest = m_wolf.m_currentHealth;
+                        m_currentTarget = m_wolf.gameObject;
+                    }
+                }
+                status.text = "ChoosingAtkTarget";
+                return RoutineState.Succeded;
+            })
+            .AttachTree(moveToTarget_SequenceContainer)
+            .AttachTree(attack_SequenceContainer)
+            .AddAction("Win", () => RoutineState.Succeded)
+            .FinishNode();
+        //************************************************************************************************************************
+
+        #endregion
+
+#region MainTree
         //return final behavior tree by adding pack and non-pack behaviors
         treeBuilder
             .BeginRepeater("Tree repeater", 0)
@@ -265,6 +343,7 @@ public class WolfAIController : MonoBehaviour {
             .FinishNode()
             .FinishNode()
             .FinishNode();
+#endregion
 
         return treeBuilder;
     }
