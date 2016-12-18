@@ -2,18 +2,20 @@
 using UnityEngine;
 
 public class PreySpawner : Singleton<PreySpawner> {
-
+    
+    public List<GameObject> SpawnPoints;
     private List<GameObject> AllNonWolves = new List<GameObject>();
 
 	// Use this for initialization
 	void Start () {
-	    AddHerd(1, 4);
+
+        AddHerd(1, 4);
 	    AddIndividual(1);
         //###TODO add more animals
 
         foreach (GameObject t in AllNonWolves) {
-	        t.transform.position = new Vector3(500 + Random.Range(0, 50), 5f, 500 + Random.Range(0, 50));
-	    }
+	        t.transform.position = SpawnPoints[0].transform.position + new Vector3(Random.Range(0, 10), 0f, Random.Range(0, 10));
+        }
 	}
 
     private void AddHerd(int type, int size) {

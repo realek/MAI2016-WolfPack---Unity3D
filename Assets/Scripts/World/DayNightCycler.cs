@@ -31,8 +31,8 @@ public class DayNightCycler : MonoBehaviour {
 
     private WaitForSeconds m_timeTick;
     private DNCycleTime m_currentTime = DNCycleTime.Morning;
-    private const int START_TIME_24H = 16; // Current start time is Morning
-    private readonly int[] START_MIN = { 3, 0 };
+    private const int START_TIME_24H = 8; // Current start time is Morning
+    private readonly int[] START_MIN = { 0, 0 };
     private const int START_DAY = 0; // Current start day is 0
     private int m_cHour;
     private int[] m_cMinutes;
