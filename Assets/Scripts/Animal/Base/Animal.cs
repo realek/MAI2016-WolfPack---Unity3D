@@ -38,6 +38,7 @@ public class Animal : MonoBehaviour {
     }
     [SerializeField]
     protected AnimalAge m_age;
+    protected int m_numeric_age = 0;
     public AnimalAge age
     {
         get
@@ -88,6 +89,22 @@ public class Animal : MonoBehaviour {
     protected void Heal()
     {
         m_currentHealth = m_maxHealth;
+    }
+
+    protected AnimalGender OppositeSex() {
+        return m_gender == AnimalGender.Male ? AnimalGender.Female : AnimalGender.Male;
+    }
+
+    protected void UpdateAge() {
+        m_numeric_age++;
+        SetAge(m_numeric_age);
+    }
+
+    protected void SetAge(int age) {
+        if (m_numeric_age < 2) m_age = AnimalAge.Infant;
+        else if (m_numeric_age < 4) m_age = AnimalAge.YoungAdult;
+        else if (m_numeric_age < 8) m_age = AnimalAge.Adult;
+        else m_age = AnimalAge.Elder;
     }
 
     public void DealtDmg(int dmg) {
