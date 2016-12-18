@@ -191,12 +191,14 @@ public class WolfAIController : MonoBehaviour {
             })
             .FinishNode();
         #endregion
-        ////Protect behavior
-        //BaseRoutine protectBehaviorBlock_SelectorContainer = treeBuilder
-        //    .BeginSelector("Defend Target From")
-        //    .FinishNode();
 
-#region Solo
+#region FindMate
+
+        BaseRoutine findMate_SequenceContainer = treeBuilder
+            ;
+#endregion
+
+        #region Solo
         //Solo behavior container
         BaseRoutine soloBehaviorBlock_SelectorContainer = treeBuilder
             .BeginSelector("Solo behavior")
