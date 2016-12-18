@@ -1,11 +1,13 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(Canvas))]
 public class NeedsUI : MonoBehaviour {
 
+    public bool isWolf = true;
+
+    [Space (10)]
     public Animal target;
     public Coroutine scriptUpdate;
     public Slider energy;
@@ -17,10 +19,12 @@ public class NeedsUI : MonoBehaviour {
 
         GetComponent<Canvas>().worldCamera = Camera.main;
 
-        if (target == null)
-            throw new System.Exception("Missing target");
-        if (energy == null || hunger == null || thirst == null || social == null)
-            throw new System.Exception("Missing need slider");
+        if (isWolf) {
+            if (target == null)
+                throw new System.Exception("Missing target");
+            if (energy == null || hunger == null || thirst == null || social == null)
+                throw new System.Exception("Missing need slider");
+        }
 
 
         if(scriptUpdate==null)
@@ -40,7 +44,7 @@ public class NeedsUI : MonoBehaviour {
         {
             transform.LookAt(transform.position + Camera.main.transform.rotation * Vector3.forward,
                    Camera.main.transform.rotation * Vector3.up);
-            if(target.needs.Initialized)
+            if(isWolf && target.needs.Initialized)
                 UpdateSliders();
             yield return null;
         }

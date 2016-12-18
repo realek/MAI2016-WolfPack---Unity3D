@@ -287,18 +287,17 @@ public class Elk : NonWolf {
         treeBuilder
             .BeginRepeater("Tree repeater", 0)
                 .BeginSelector("To do or not to do")
-                .BeginCondition("Do I have to wait", () => (WaitTime > 0.001f))
-                    .BeginSequence("Waiting")
-                        .AddAction("Reduce wait time", () => {
-                            WaitTime -= BEHAVIOR_TREE_UPDATE_RATE;
-                            if (WaitTime <= 0)
-                            {
-                                WaitTime = 0;
-                                return RoutineState.Failed;
-                            }
-                            return RoutineState.Succeded;
-                        })
-                        .FinishNode()
+                    .BeginCondition("Do I have to wait", () => (WaitTime > 0.001f))
+                            .AddAction("Reduce wait time", () => {
+                                status.text = "Waiting";
+                                WaitTime -= BEHAVIOR_TREE_UPDATE_RATE;
+                                if (WaitTime <= 0)
+                                {
+                                    WaitTime = 0;
+                                    return RoutineState.Failed;
+                                }
+                                return RoutineState.Succeded;
+                            })
                     .FinishNode()
                     .BeginCondition("Dont wait", () => true)
                         .AttachTree(btTree)
