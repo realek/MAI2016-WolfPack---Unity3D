@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 659fe12992683114887ef3ffb33ca41d
-timeCreated: 1482011653
+timeCreated: 1482084114
 licenseType: Free
 ModelImporter:
   serializedVersion: 19
@@ -10,6 +10,7 @@ ModelImporter:
     2300000: //RootNode
     3300000: //RootNode
     4300000: Wolf
+    4300002: wolf
   materials:
     importMaterials: 1
     materialName: 0
