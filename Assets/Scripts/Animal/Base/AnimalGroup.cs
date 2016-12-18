@@ -72,7 +72,7 @@ public class AnimalGroup {
 
         }
         //works for planes only // will add Y axis support later on.
-        return new Vector3(x / m_members.Count - 1, y / m_members.Count - 1, z / m_members.Count - 1);
+        return new Vector3(x / (m_members.Count - 1), y / (m_members.Count - 1), z / (m_members.Count - 1));
 
     }
 

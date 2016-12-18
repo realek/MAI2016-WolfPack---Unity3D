@@ -13,7 +13,7 @@
         public const int BearCarcassQnt = 3000; 
 
         public const int RestEnIncrease = 10;
-        public const float ElkHerdRadius = 8f; //max distance before a wandering elk goes back to the center
+        public const float ElkHerdRadius = 100f; //max distance before a wandering elk goes back to the center
         public const int ElkAtk1 = 0;
         public const int ElkAtk2 = 2;
         public const int ElkAtk3 = 6;

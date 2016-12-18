@@ -91,7 +91,7 @@ public class Elk : NonWolf {
                     .BeginCondition("Are others far away", () => ((transform.position - GetGroupCenter()).sqrMagnitude > GlobalVars.ElkHerdRadius))
                         .AttachTree(returnToGroup_SequenceContainer)
                     .FinishNode()
-                    .BeginCondition("Should I move around", () => (Random.value > 0.5f))
+                    .BeginCondition("Should I move around", () => true)//(Random.value > 0.5f))
                         .AttachTree(wanderBehavioir_SequenceContainer)
                     .FinishNode()
                 .FinishNode();
@@ -209,7 +209,7 @@ public class Elk : NonWolf {
                                     .AttachTree(runAway_SequenceContainer)
                                 .FinishNode()
                                 .BeginCondition("Out of energy, fight", () => true)
-                                .AttachTree(fight_SequenceContainer) //if not enough energy to run, fight
+                                    .AttachTree(fight_SequenceContainer) //if not enough energy to run, fight
                                 .FinishNode()
                             .FinishNode()
                         .FinishNode()
@@ -232,7 +232,7 @@ public class Elk : NonWolf {
                     .AttachTree(stayAndWait_SequenceContainer)
                 .FinishNode()
                 .BeginCondition("Is brave enough", () => Bravery > 0)
-                .AttachTree(fight_SequenceContainer) //if wolves are attacking although bravery is not 0, fight (with increased damage)
+                    .AttachTree(fight_SequenceContainer) //if wolves are attacking although bravery is not 0, fight (with increased damage)
                 .FinishNode()
             .FinishNode();
 
@@ -246,12 +246,12 @@ public class Elk : NonWolf {
                             .AttachTree(groupRunAway_SequenceContainer)
                         .FinishNode()
                         .BeginCondition("Unhealthy", () => true)
-                        .AttachTree(attackedIndividual_SelectorContainer)
+                            .AttachTree(attackedIndividual_SelectorContainer)
                         .FinishNode()
                     .FinishNode()
                 .FinishNode()
                 .BeginCondition("Not in group", () => true)
-                .AttachTree(attackedIndividual_SelectorContainer)
+                    .AttachTree(attackedIndividual_SelectorContainer)
                 .FinishNode()
             .FinishNode();
 
@@ -269,28 +269,30 @@ public class Elk : NonWolf {
                 .BeginCondition("Am I in a group", () => (currentGroup != null))
                     .AttachTree(groupBehavior_SelectorContainer)
                 .FinishNode()
-                .BeginCondition("Should I wander", () => (Random.value > 0.3f))
+                .BeginCondition("Should I wander", () => true)//(Random.value > 0.3f))
                     .AttachTree(wanderBehavioir_SequenceContainer)
                 .FinishNode()
-            .FinishNode()
-            ;
+            .FinishNode();
 
         //the actual tree
         treeBuilder
-            .BeginSelector("To do or not to do")
-            .BeginCondition("Do I have to wait", () => (WaitTime > 0.001f))
-                .BeginSequence("Waiting")
-                    .AddAction("Reduce wait time", () => {
-                        WaitTime -= BEHAVIOR_TREE_UPDATE_RATE;
-                        if (WaitTime < 0) WaitTime = 0;
-                        return RoutineState.Succeded;
-                    })
+            .BeginRepeater("Tree repeater", 0)
+                .BeginSelector("To do or not to do")
+                .BeginCondition("Do I have to wait", () => (WaitTime > 0.001f))
+                    .BeginSequence("Waiting")
+                        .AddAction("Reduce wait time", () => {
+                            WaitTime -= BEHAVIOR_TREE_UPDATE_RATE;
+                            if (WaitTime < 0) WaitTime = 0;
+                            return RoutineState.Succeded;
+                        })
+                        .FinishNode()
+                    .FinishNode()
+                    .BeginCondition("Dont wait", () => true)
+                        .AttachTree(btTree)
                     .FinishNode()
                 .FinishNode()
-                .BeginCondition("Dont wait", () => true)
-                .AttachTree(btTree)
-                .FinishNode()
             .FinishNode();
+
 
         return treeBuilder;
     }
