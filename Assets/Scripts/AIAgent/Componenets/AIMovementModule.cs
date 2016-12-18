@@ -157,6 +157,9 @@ public class AIMovementModule : AIModule
             }
 
 
+            if(target==null) //if target becomes null during execution
+                m_failed = true;
+
             if (!m_targetReached && !m_failed)
             {
                 cTargetPosition = m_target.transform.position;
