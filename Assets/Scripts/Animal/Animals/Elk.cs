@@ -291,7 +291,11 @@ public class Elk : NonWolf {
                     .BeginSequence("Waiting")
                         .AddAction("Reduce wait time", () => {
                             WaitTime -= BEHAVIOR_TREE_UPDATE_RATE;
-                            if (WaitTime < 0) WaitTime = 0;
+                            if (WaitTime <= 0)
+                            {
+                                WaitTime = 0;
+                                return RoutineState.Failed;
+                            }
                             return RoutineState.Succeded;
                         })
                         .FinishNode()
