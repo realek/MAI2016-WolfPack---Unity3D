@@ -25,8 +25,8 @@ public enum AnimalStrength
 
 public class Animal : MonoBehaviour {
 
-
-    protected AnimalGroup currentGroup = null;
+    [HideInInspector]
+    public AnimalGroup currentGroup = null;
     [SerializeField]
     protected AnimalGender m_gender;
     public AnimalGender gender
