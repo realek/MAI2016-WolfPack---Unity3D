@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.AI;
 using CustomConsts;
+using System.Linq;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(Wolf))]
@@ -191,7 +192,7 @@ public class WolfAIController : MonoBehaviour {
             })
             .FinishNode();
         #endregion
-
+        
 #region FindMate
         //before that check if wolf is not in a pack
         BaseRoutine findMate_SequenceContainer = treeBuilder
@@ -206,7 +207,26 @@ public class WolfAIController : MonoBehaviour {
                 .FinishNode()
             .FinishNode()
             ;
-#endregion
+        #endregion
+
+        #region Chase
+        //Get target and move to behavior
+        BaseRoutine chaseBehaviorBlock_SelectorContainer = treeBuilder
+            .BeginSequence("Chase target")
+            .AddAction("Is there a target target that we can chase", () => 
+            {
+                var result = m_detectionModule.DetectedGameObjects.Where(entity => entity.tag == "Rabbit" || entity.tag == "Elk").ToList();
+                if (result.Count == 0) return RoutineState.Failed;
+                else
+                {
+                    m_currentTarget = (result.OrderBy(entity => (entity.transform.position - transform.position).sqrMagnitude).ToList()[0]).gameObject;
+                    return RoutineState.Succeded;
+                }
+
+            })
+            .AttachTree(moveToTarget_SequenceContainer)
+            .FinishNode();
+        #endregion
 
         #region Solo
         //Solo behavior container
