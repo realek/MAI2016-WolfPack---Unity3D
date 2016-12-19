@@ -10,8 +10,14 @@ using UnityEngine.UI;
 public class WolfAIController : MonoBehaviour {
 
 
-    [SerializeField]
-    private Text status;
+    private string m_status;
+    public string status
+    {
+        get
+        {
+            return m_status;
+        }
+    }
     [SerializeField]
     private AIDetectionModule m_detectionModule;
     [SerializeField]
@@ -244,7 +250,7 @@ public class WolfAIController : MonoBehaviour {
             .BeginSequence("Chase target")
             .AddAction("Is there a target target that we can chase", () => 
             {
-                var result = m_detectionModule.DetectedGameObjects.Where(entity => entity.tag == "Rabbit" || entity.tag == "Elk").ToList();
+                var result = m_detectionModule.DetectedGameObjects.Where(entity => entity.tag == "Rabbit" || entity.tag == "Elk" || entity.tag == "Prey").ToList();
                 if (result.Count == 0) return RoutineState.Failed;
                 else
                 {
@@ -336,7 +342,7 @@ public class WolfAIController : MonoBehaviour {
                 .AddAction("Cooldown", () => {
                     if (m_wolf.m_currentHealth > 30) m_wolf.WaitTime = 1;
                     else m_wolf.WaitTime = 2;
-                    status.text = "Attacking";
+                    m_status = "Attacking";
                     return RoutineState.Succeded;
                 })
             .FinishNode();
@@ -353,7 +359,7 @@ public class WolfAIController : MonoBehaviour {
                         m_currentTarget = m_wolf.gameObject;
                     }
                 }
-                status.text = "ChoosingAtkTarget";
+                m_status = "ChoosingAtkTarget";
                 return RoutineState.Succeded;
             })
             .AttachTree(moveToTarget_SequenceContainer)
@@ -368,7 +374,7 @@ public class WolfAIController : MonoBehaviour {
         BaseRoutine chaseAttackBehaviorBlock_SequenceContainer = treeBuilder
             .BeginSequence("Chase and attack")
             .AttachTree(chaseBehaviorBlock_SelectorContainer)
-            .AttachTree(attack_SequenceContainer)
+            .AttachTree(fight_SequenceContainer)
             .FinishNode();
         #endregion
 
@@ -376,16 +382,17 @@ public class WolfAIController : MonoBehaviour {
         //return final behavior tree by adding pack and non-pack behaviors
         treeBuilder
             .BeginRepeater("Repeater", 0)
-            .BeginSelector("A")
-                .BeginCondition("B", () =>
-                {
-                    m_currentTarget = sleepArea;
-                    return true;
-                })
-                .AttachTree(moveToTarget_SequenceContainer)
-                //.AttachTree(findMate_SequenceContainer)
-                .FinishNode()
-            .FinishNode()
+            .AttachTree(chaseAttackBehaviorBlock_SequenceContainer)
+            //.BeginSelector("A")
+            //    .BeginCondition("B", () =>
+            //    {
+            //        m_currentTarget = sleepArea;
+            //        return true;
+            //    })
+            //    .AttachTree(moveToTarget_SequenceContainer)
+            //    //.AttachTree(findMate_SequenceContainer)
+            //    .FinishNode()
+            //.FinishNode()
             .FinishNode();
             /*
             .BeginRepeater("Tree repeater", 0)

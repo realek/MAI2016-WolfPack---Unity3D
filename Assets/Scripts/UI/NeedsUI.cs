@@ -14,6 +14,8 @@ public class NeedsUI : MonoBehaviour {
     public Slider hunger;
     public Slider thirst;
     public Slider social;
+    public Text status;
+    public Text health;
     // Use this for initialization
     void Start () {
 
@@ -22,7 +24,7 @@ public class NeedsUI : MonoBehaviour {
         if (isWolf) {
             if (target == null)
                 throw new System.Exception("Missing target");
-            if (energy == null || hunger == null || thirst == null || social == null)
+            if (energy == null || hunger == null || thirst == null || social == null || status == null || health == null)
                 throw new System.Exception("Missing need slider");
         }
 
@@ -46,6 +48,8 @@ public class NeedsUI : MonoBehaviour {
                    Camera.main.transform.rotation * Vector3.up);
             if(isWolf && target.needs.Initialized)
                 UpdateSliders();
+             status.text = target.status;
+            health.text = target.m_currentHealth.ToString();
             yield return null;
         }
     }
