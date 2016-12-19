@@ -5,8 +5,8 @@ using UnityEngine.AI;
 
 public class WolfPackManager : Singleton<WolfPackManager> {
 
-    public GameObject initMWolf;
-    public GameObject initFWolf;
+    public Wolf initMWolf;
+    public Wolf initFWolf;
     public GameObject restArea;
 
     public GameObject[] patrolPoints;
@@ -22,15 +22,16 @@ public class WolfPackManager : Singleton<WolfPackManager> {
 
     // Use this for initialization
     void Awake () {
-        targetDict.Add(initMWolf.GetComponent<Wolf>(), initFWolf);
-        targetDict.Add(initFWolf.GetComponent<Wolf>(), null);
+        targetDict.Add(initMWolf, initFWolf.gameObject);
+        targetDict.Add(initFWolf, null);
     }
 
     public void RegisterPack() {
         if (!registered) {
-            AnimalGroupManager.Instance.RegisterWolfPack(initMWolf.GetComponent<Wolf>(), initFWolf.GetComponent<Wolf>());
-            targetDict[initMWolf.GetComponent<Wolf>()] = restArea;
-            targetDict[initFWolf.GetComponent<Wolf>()] = restArea;
+            AnimalGroupManager.Instance.RegisterWolfPack(initMWolf, initFWolf);
+            targetDict[initMWolf] = restArea;
+            targetDict[initFWolf] = restArea;
+
             registered = true;
         }
     }

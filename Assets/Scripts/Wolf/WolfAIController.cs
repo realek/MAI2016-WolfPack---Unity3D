@@ -64,6 +64,19 @@ public class WolfAIController : MonoBehaviour {
         .FinishNode();
         #endregion
 
+        ///Move with pack
+        BaseRoutine followPackLeader_SequenceContainer = treeBuilder
+            .BeginSequence("Follow pack")
+            .AddAction("set current Target", () =>
+             {
+                 if (m_wolf.packRole == WolfPackRole.Alpha)
+                     return RoutineState.Failed;
+                 else
+                     m_currentTarget = m_wolf.currentGroup.GetMemberBeforeMe(m_wolf).gameObject;
+                 return RoutineState.Succeded;
+             })
+             .AttachTree(moveToTarget_SequenceContainer)
+            .FinishNode();
 #region basicNeeds
         //Needs behavior container
         BaseRoutine needsBlock_SelectorContainer = treeBuilder

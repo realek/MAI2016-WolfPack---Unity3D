@@ -51,6 +51,15 @@ public class AnimalGroup {
         return m_members.Contains(animal);
     }
 
+    public Animal GetMemberBeforeMe(Animal self)
+    {
+        int idx = m_members.IndexOf(self) - 1;
+        if (idx < 0)
+            return null;
+
+        return m_members[m_members.IndexOf(self) - 1];
+    }
+
     /// <summary>
     /// Get centerpoint position to group if separated
     /// </summary>
