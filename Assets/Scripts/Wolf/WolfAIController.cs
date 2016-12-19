@@ -231,11 +231,11 @@ public class WolfAIController : MonoBehaviour {
                     if (m_wolf.gender == AnimalGender.Male) return true;
                     return false;
                 })
-                    //.AddRepeater("go to female in 4 steps", 4)
-                    .AttachTree(dedicatedWander_SequenceContainer)
+                    .BeginRepeater("go to female in 4 steps", 4)
+                        .AttachTree(dedicatedWander_SequenceContainer)
+                    .FinishNode()
                 .FinishNode()
-            .FinishNode()
-            ;
+            .FinishNode();
         #endregion
 
         #region Chase
@@ -364,9 +364,22 @@ public class WolfAIController : MonoBehaviour {
 
         #endregion
 
-#region MainTree
+        #region MainTree
         //return final behavior tree by adding pack and non-pack behaviors
         treeBuilder
+            .BeginSelector("A")
+                .BeginCondition("B", () => {
+                    return true;
+                })
+                .AddAction("C", () => {
+                    m_currentTarget = sleepArea;
+                    return RoutineState.Succeded;
+                })
+                .AttachTree(moveToTarget_SequenceContainer)
+                //.AttachTree(findMate_SequenceContainer)
+                .FinishNode()
+            .FinishNode()
+            /*
             .BeginRepeater("Tree repeater", 0)
             .BeginSelector("Initial State Selector")
             .BeginCondition("Pack Behavior", () =>
@@ -382,7 +395,9 @@ public class WolfAIController : MonoBehaviour {
             .AttachTree(soloBehaviorBlock_SelectorContainer)
             .FinishNode()
             .FinishNode()
-            .FinishNode();
+            .FinishNode()
+            */
+            ;
 #endregion
 
         return treeBuilder;

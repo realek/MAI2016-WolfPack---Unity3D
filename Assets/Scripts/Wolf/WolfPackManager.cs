@@ -13,7 +13,7 @@ public class WolfPackManager : Singleton<WolfPackManager> {
     // Use this for initialization
     void Start () {
         targetDict.Add(initMWolf.GetComponent<Wolf>(), initFWolf);
-
+        targetDict.Add(initFWolf.GetComponent<Wolf>(), null);
     }
 
     public void RegisterPack() {
