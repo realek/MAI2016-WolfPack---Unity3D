@@ -10,8 +10,14 @@ using UnityEngine.UI;
 public class WolfAIController : MonoBehaviour {
 
 
-    [SerializeField]
-    private Text status;
+    private string m_status;
+    public string status
+    {
+        get
+        {
+            return m_status;
+        }
+    }
     [SerializeField]
     private AIDetectionModule m_detectionModule;
     [SerializeField]
@@ -202,11 +208,10 @@ public class WolfAIController : MonoBehaviour {
                 if (!m_wandering) {
                     m_wandering = true;
                     NavMeshHit hit;
-                    Vector3 source = transform.position/2 +
-                                     (new Vector3(Random.Range(-10f, 10f), 0f, Random.Range(-10f, 10f))) +
-                                     WolfPackManager.Instance.targetDict[m_wolf].transform.position/2;
+                    Vector3 source = transform.position + (Random.insideUnitSphere * m_detectionModule.DetectionAreaRadius);
+                    Vector3 halfDistToTarget = (transform.position - WolfPackManager.Instance.targetDict[m_wolf].transform.position)/2;
                     if (NavMesh.SamplePosition(source, out hit, m_detectionModule.DetectionAreaRadius, -1)) {
-                        m_wanderPoint.transform.position = hit.position;
+                        m_wanderPoint.transform.position = hit.position + halfDistToTarget;
                         m_currentTarget = m_wanderPoint;
                     } else {
                         Debug.Log("Failed to get a dedicated random point on navmesh with source at" + source + "hit at: " + hit.position);
@@ -229,16 +234,13 @@ public class WolfAIController : MonoBehaviour {
         BaseRoutine findMate_SequenceContainer = treeBuilder
             .BeginSelector("What is my gender")
                 .BeginCondition("Am I male", () => {
-                    if (m_wolf.gender == AnimalGender.Male) {
-                        return true;
-                    }
+                    if (m_wolf.gender == AnimalGender.Male) return true;
                     return false;
                 })
                     .BeginRepeater("go to female in 4 steps", 4)
                         .AttachTree(dedicatedWander_SequenceContainer)
                     .FinishNode()
                 .FinishNode()
-
             .FinishNode();
         #endregion
 
@@ -248,7 +250,7 @@ public class WolfAIController : MonoBehaviour {
             .BeginSequence("Chase target")
             .AddAction("Is there a target target that we can chase", () => 
             {
-                var result = m_detectionModule.DetectedGameObjects.Where(entity => entity.tag == "Rabbit" || entity.tag == "Elk").ToList();
+                var result = m_detectionModule.DetectedGameObjects.Where(entity => entity.tag == "Rabbit" || entity.tag == "Elk" || entity.tag == "Prey").ToList();
                 if (result.Count == 0) return RoutineState.Failed;
                 else
                 {
@@ -340,7 +342,7 @@ public class WolfAIController : MonoBehaviour {
                 .AddAction("Cooldown", () => {
                     if (m_wolf.m_currentHealth > 30) m_wolf.WaitTime = 1;
                     else m_wolf.WaitTime = 2;
-                    status.text = "Attacking";
+                    m_status = "Attacking";
                     return RoutineState.Succeded;
                 })
             .FinishNode();
@@ -357,7 +359,7 @@ public class WolfAIController : MonoBehaviour {
                         m_currentTarget = m_wolf.gameObject;
                     }
                 }
-                status.text = "ChoosingAtkTarget";
+                m_status = "ChoosingAtkTarget";
                 return RoutineState.Succeded;
             })
             .AttachTree(moveToTarget_SequenceContainer)
@@ -368,19 +370,29 @@ public class WolfAIController : MonoBehaviour {
 
         #endregion
 
+        #region Chase and Attack
+        BaseRoutine chaseAttackBehaviorBlock_SequenceContainer = treeBuilder
+            .BeginSequence("Chase and attack")
+            .AttachTree(chaseBehaviorBlock_SelectorContainer)
+            .AttachTree(fight_SequenceContainer)
+            .FinishNode();
+        #endregion
+
         #region MainTree
         //return final behavior tree by adding pack and non-pack behaviors
         treeBuilder
             .BeginRepeater("Repeater", 0)
-            .BeginSelector("A")
-                .BeginCondition("B", () =>
-                {
-                    //m_currentTarget = sleepArea;
-                    return true;
-                })
-                .AttachTree(findMate_SequenceContainer)
-                .FinishNode()
-            .FinishNode()
+            .AttachTree(chaseAttackBehaviorBlock_SequenceContainer)
+            //.BeginSelector("A")
+            //    .BeginCondition("B", () =>
+            //    {
+            //        m_currentTarget = sleepArea;
+            //        return true;
+            //    })
+            //    .AttachTree(moveToTarget_SequenceContainer)
+            //    //.AttachTree(findMate_SequenceContainer)
+            //    .FinishNode()
+            //.FinishNode()
             .FinishNode();
             /*
             .BeginRepeater("Tree repeater", 0)

@@ -25,6 +25,7 @@ public enum AnimalStrength
 
 public class Animal : MonoBehaviour {
 
+    public string status = "None";
     [HideInInspector]
     public AnimalGroup currentGroup = null;
     [SerializeField]
