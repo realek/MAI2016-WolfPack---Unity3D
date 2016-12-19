@@ -108,140 +108,6 @@ public class Rabbit : NonWolf {
                 .AttachTree(moveToTarget_SequenceContainer)
             .FinishNode();
 
-        //run away from wolves, place condition have enough energy
-        BaseRoutine groupRunAway_SequenceContainer = treeBuilder
-            .BeginSequence("Run away from wolves")
-                //go in the direction opposite of the wolf, twice the distance from the center of the group to wolf
-                .AddAction("Choose run direction", () => {
-                    Vector3 center = GetGroupCenter();
-                    float xPos = 3 * center.x - 2 * m_currentTarget.transform.position.x;
-                    float zPos = 3 * center.z - 2 * m_currentTarget.transform.position.z;
-
-                    //if the goal point ends up beyond the field limits, instead of running away from the wolf
-                    // charge straight through him
-                    if (xPos < 210 || xPos > 710) xPos = 2 * m_currentTarget.transform.position.x - center.x;
-                    if (zPos < 120 || zPos > 860) xPos = 2 * m_currentTarget.transform.position.z - center.z;
-
-                    m_wanderPoint.transform.position = new Vector3(xPos, transform.position.y, zPos);
-                    m_currentTarget = m_wanderPoint;
-                    status = "GroupRunAway";
-                    return RoutineState.Succeded;
-                })
-                .AttachTree(moveToTarget_SequenceContainer)
-            .FinishNode();
-
-        //deal damage
-        BaseRoutine attack_SequenceContainer = treeBuilder
-            .BeginSequence("Run away from wolves")
-                .AddAction("Animate and deal damage", () => {
-                    if (m_currentTarget == null || m_currentTarget == gameObject || m_currentTarget.GetComponent<Animal>() == null)
-                        return RoutineState.Failed;
-                    switch (m_age) {
-                        case AnimalAge.YoungAdult:
-                            atkDmg = dmg2;
-                            break;
-                        case AnimalAge.Adult:
-                            atkDmg = dmg3;
-                            break;
-                        case AnimalAge.Elder:
-                            atkDmg = dmg4;
-                            break;
-                        default:
-                            atkDmg = dmg1;
-                            break;
-                    }
-                    m_currentTarget.GetComponent<Animal>().DealtDmg(atkDmg + Bravery * 2);
-                    return RoutineState.Succeded;
-                })
-                .AddAction("Cooldown", () => {
-                    if (m_currentHealth > 30) WaitTime = 1;
-                    else WaitTime = 2;
-                    status = "Attacking";
-                    return RoutineState.Succeded;
-                })
-            .FinishNode();
-
-        //fight behavior
-        BaseRoutine fight_SequenceContainer = treeBuilder
-            .BeginSequence("Combat")
-            .AddAction("Find wolf with lowest hp", () => {
-                int weakest = 101;
-                foreach (Collider t in m_detectionModule.DetectedGameObjects) {
-                    var m_wolf = t.GetComponent<Wolf>();
-                    if (m_wolf && m_wolf.m_currentHealth < weakest) {
-                        weakest = m_wolf.m_currentHealth;
-                        m_currentTarget = m_wolf.gameObject;
-                    }
-                }
-                status = "ChoosingAtkTarget";
-                return RoutineState.Succeded;
-            })
-            .AttachTree(moveToTarget_SequenceContainer)
-            .AttachTree(attack_SequenceContainer)
-            .AddAction("Win", () => RoutineState.Succeded)
-            .FinishNode();
-
-        //stay behavior
-        BaseRoutine stayAndWait_SequenceContainer = treeBuilder
-            .BeginSequence("Wait timer")
-            .AddAction("Wait", () => {
-                status = "Waiting";
-                WaitTime = 1;
-                needs.ModNeed(NeedType.Energy, GlobalVars.RestEnIncrease);
-                return RoutineState.Succeded;
-            })
-            .FinishNode();
-
-        //attacked and alone behavior
-        BaseRoutine attackedIndividual_SelectorContainer = treeBuilder
-            .BeginSelector("How much bravery I have left")
-                .BeginCondition("none", () => (Bravery == 0))
-                        .BeginCondition("Are the wolves too many", () => {
-                            int wolfCount = 0;
-                            foreach (Collider t in m_detectionModule.DetectedGameObjects) {
-                                if (t.tag == "Wolf") {
-                                    wolfCount++;
-                                }
-                            }
-                            return (wolfCount > 0); //how many wolves are too many
-                        })
-                            .BeginSelector("Can I run away")
-                                .BeginCondition("Do I have energy left", () => (needs.GetNeed(NeedType.Energy) > 30))
-                                    .AttachTree(runAway_SequenceContainer)
-                                .FinishNode()
-                                .BeginCondition("Out of energy, fight", () => true)
-                                    .AttachTree(fight_SequenceContainer) //if not enough energy to run, fight
-                                .FinishNode()
-                            .FinishNode()
-                        .FinishNode()
-                .FinishNode()
-                .BeginCondition("Are wolves not attacking me", () => (m_currentHealth > 60))
-                    .AttachTree(stayAndWait_SequenceContainer)
-                .FinishNode()
-                .BeginCondition("Is brave enough", () => Bravery > 0)
-                    .AttachTree(fight_SequenceContainer) //if wolves are attacking although bravery is not 0, fight (with increased damage)
-                .FinishNode()
-            .FinishNode();
-
-        //attacked behavior
-        BaseRoutine attackedBehavior_SequenceContainer = treeBuilder
-            .BeginSelector("Attacked action")
-                .BeginCondition("Am I in a group", () => (m_group != null))
-                    .BeginSelector("Stay or flee group")
-                        //am I healthy enough to stay in the herd
-                        .BeginCondition("Am I unharmed and not tired", () => (m_currentHealth > 79 && needs.GetNeed(NeedType.Energy) > 10))
-                            .AttachTree(groupRunAway_SequenceContainer)
-                        .FinishNode()
-                        .BeginCondition("Unhealthy", () => true)
-                            .AttachTree(attackedIndividual_SelectorContainer)
-                        .FinishNode()
-                    .FinishNode()
-                .FinishNode()
-                .BeginCondition("Not in group", () => true)
-                    .AttachTree(attackedIndividual_SelectorContainer)
-                .FinishNode()
-            .FinishNode();
-
         //the executed behavior tree
         BaseRoutine btTree = treeBuilder
             .BeginSelector("What to do")
@@ -251,7 +117,7 @@ public class Rabbit : NonWolf {
                     }
                     return false;
                 })
-                    .AttachTree(attackedBehavior_SequenceContainer)
+                    .AttachTree(runAway_SequenceContainer)
                 .FinishNode()
                 .BeginCondition("Am I in a group", () => (currentGroup != null))
                     .AttachTree(groupBehavior_SelectorContainer)

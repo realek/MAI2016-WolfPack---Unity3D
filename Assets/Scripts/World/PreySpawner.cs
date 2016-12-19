@@ -10,17 +10,16 @@ public class PreySpawner : Singleton<PreySpawner> {
 
 	// Use this for initialization
 	void Start () {
+        AddHerd(0, Random.Range(4, 10));
+        AddHerd(0, Random.Range(4, 10));
+        AddHerd(0, Random.Range(4, 10));
         AddHerd(1, Random.Range(4, 10));
-        NextPoint();
+        AddHerd(1, Random.Range(4, 10));
         AddIndividual(1);
         AddHerd(1, Random.Range(4, 10));
-        NextPoint();
-        AddHerd(1, Random.Range(4, 10));
-        NextPoint();
-        AddHerd(1, Random.Range(4, 10));
-        NextPoint();
-        AddHerd(1, Random.Range(4, 10));
-        NextPoint();
+        //AddHerd(1, Random.Range(4, 10));
+        //AddHerd(1, Random.Range(4, 10));
+        //AddHerd(1, Random.Range(4, 10));
     }
 
     private void NextPoint() {
@@ -63,12 +62,8 @@ public class PreySpawner : Singleton<PreySpawner> {
         switch (type) {
             case 0:
                 return (GameObject) Instantiate((Resources.Load("Rabbit")));
-            case 1:
-                return (GameObject) Instantiate((Resources.Load("ElkTemp")));
-            case 2:
-                return (GameObject) Instantiate((Resources.Load("Coyote")));
             default:
-                return (GameObject) Instantiate((Resources.Load("Bear")));
+                return (GameObject) Instantiate((Resources.Load("ElkTemp")));
         }
     }
     
