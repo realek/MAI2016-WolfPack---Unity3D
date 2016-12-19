@@ -39,7 +39,7 @@ public class WolfAIController : MonoBehaviour {
     private Coroutine treeRunner;
 
     private GameObject sleepArea;
-
+    private GameObject m_roughTerrain;
     BaseRoutine CreateBehaviorTree()
     {
 
@@ -478,6 +478,46 @@ public class WolfAIController : MonoBehaviour {
             .FinishNode();
         #endregion
 
+        #region Chase Towards Zone
+
+
+        BaseRoutine chaseTowardsBehaviorBlock_sequenceContainer = treeBuilder
+         .BeginSequence("Chase target")
+         .AddAction("Is there a target target that we can chase", () =>
+         {
+             var result = m_detectionModule.DetectedGameObjects.Where(entity => entity.tag == "Rabbit" || entity.tag == "Elk" || entity.tag == "Prey").ToList();
+             if (result.Count == 0) return RoutineState.Failed;
+             else
+             {
+                 m_currentTarget = (result.OrderBy(entity => (entity.transform.position - transform.position).sqrMagnitude).ToList()[0]).gameObject;
+                 return RoutineState.Succeded;
+             }
+
+         })
+         .AddAction("Compute chase direction based on rough area", () => 
+         {
+             Vector3 desiredDirection = m_roughTerrain.transform.position - m_currentTarget.transform.position;
+             if (desiredDirection == Vector3.zero)
+                 return RoutineState.Succeded;
+             Vector3 goBehindTarget = m_currentTarget.transform.position - desiredDirection;
+             m_wanderPoint.transform.position = goBehindTarget;
+             m_currentTarget = m_wanderPoint;
+             return RoutineState.Succeded;
+         })
+         .AttachTree(moveToTarget_SequenceContainer)
+         .FinishNode();
+
+
+        #endregion
+
+        #region Chase Towards Zone and Attack
+        BaseRoutine chaseTowardsZoneAttackBehaviorBlock_SequenceContainer = treeBuilder
+           .BeginSequence("Chase and attack")
+           .AttachTree(chaseTowardsBehaviorBlock_sequenceContainer)
+           .AttachTree(fight_SequenceContainer)
+           .FinishNode();
+        #endregion
+
         #region MainTree
         //return final behavior tree by adding pack and non-pack behaviors
 
@@ -569,7 +609,7 @@ public class WolfAIController : MonoBehaviour {
         m_movementModule.Initialize(this);
         m_behaviorTree = CreateBehaviorTree();
         treeRunner = StartCoroutine(BehaviorTreeRunner());
-
+        m_roughTerrain = GameObject.FindGameObjectWithTag("RoughTerrain");
         sleepArea = GameObject.FindGameObjectWithTag("RestArea");
     }
 
