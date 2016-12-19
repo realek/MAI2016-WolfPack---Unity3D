@@ -10,9 +10,18 @@ public class PreySpawner : Singleton<PreySpawner> {
 
 	// Use this for initialization
 	void Start () {
-        AddHerd(1, 4);
+        AddHerd(1, Random.Range(4, 10));
+        NextPoint();
         AddIndividual(1);
-	}
+        AddHerd(1, Random.Range(4, 10));
+        NextPoint();
+        AddHerd(1, Random.Range(4, 10));
+        NextPoint();
+        AddHerd(1, Random.Range(4, 10));
+        NextPoint();
+        AddHerd(1, Random.Range(4, 10));
+        NextPoint();
+    }
 
     private void NextPoint() {
         spCounter++;
@@ -20,14 +29,14 @@ public class PreySpawner : Singleton<PreySpawner> {
     }
 
     public void Repopulate() {
-        if (AllNonWolves.Count < 10) {
+        if (AllNonWolves.Count < 30) {
             float dice = Random.value;
-            if (dice < .3) AddIndividual(0);
+            if (dice < .3) AddIndividual(1);
             else if (dice < .5) AddIndividual(1);
-            else if (dice < .7) AddIndividual(2);
-            else if (dice < .8) AddHerd(0, Random.Range(3, 6));
-            else if (dice < .9) AddHerd(1, Random.Range(3, 6));
-            else AddHerd(2, Random.Range(3, 6));
+            else if (dice < .7) AddIndividual(1);
+            else if (dice < .8) AddHerd(1, Random.Range(4, 10));
+            else if (dice < .9) AddHerd(1, Random.Range(4, 10));
+            else AddHerd(1, Random.Range(3, 6));
             NextPoint();
         }
     }

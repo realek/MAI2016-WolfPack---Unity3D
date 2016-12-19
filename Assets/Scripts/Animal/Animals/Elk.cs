@@ -325,6 +325,7 @@ public class Elk : NonWolf {
     {
         m_detectionModule.Shutdown();
         m_movementModule.Shutdown();
+        StopCoroutine(treeRunner);
         treeRunner = null;
     }
 

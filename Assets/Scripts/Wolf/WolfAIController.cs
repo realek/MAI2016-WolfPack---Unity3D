@@ -372,6 +372,17 @@ public class WolfAIController : MonoBehaviour {
             .FinishNode()
             .BeginCondition("On Patrol", () => 
             {
+                //if non-wolf detected stop patrol
+                if(m_detectionModule.DetectedGameObjects!=null && 
+                m_detectionModule.DetectedGameObjects.Exists(entity => entity.GetComponent<NonWolf>()!=null))
+                {
+                    m_onPatrol = false;
+                    currentPatrolPointIDX = -1;
+                    m_currentTarget = gameObject;
+                    return false;
+                }
+
+
                 if (m_wandering)
                     return false;
                 if (m_onPatrol)
@@ -563,6 +574,9 @@ public class WolfAIController : MonoBehaviour {
                         return false;
                     })
                         .AttachTree(findMate_SequenceContainer)
+                    .FinishNode()
+                    .BeginCondition("Detect prey", () => true)
+                    .AttachTree(chaseAttackBehaviorBlock_SequenceContainer)
                     .FinishNode()
                     .BeginCondition("Am I Alpha Male?", () => m_wolf.packRole == WolfPackRole.Alpha && m_wolf.currentGroup!=null)
                     .AttachTree(alphaBehaviorBlock_SelectorContainer)
