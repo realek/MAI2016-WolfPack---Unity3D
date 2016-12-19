@@ -367,18 +367,18 @@ public class WolfAIController : MonoBehaviour {
         #region MainTree
         //return final behavior tree by adding pack and non-pack behaviors
         treeBuilder
+            .BeginRepeater("Repeater", 0)
             .BeginSelector("A")
-                .BeginCondition("B", () => {
-                    return true;
-                })
-                .AddAction("C", () => {
+                .BeginCondition("B", () =>
+                {
                     m_currentTarget = sleepArea;
-                    return RoutineState.Succeded;
+                    return true;
                 })
                 .AttachTree(moveToTarget_SequenceContainer)
                 //.AttachTree(findMate_SequenceContainer)
                 .FinishNode()
             .FinishNode()
+            .FinishNode();
             /*
             .BeginRepeater("Tree repeater", 0)
             .BeginSelector("Initial State Selector")
