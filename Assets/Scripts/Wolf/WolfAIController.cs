@@ -229,7 +229,8 @@ public class WolfAIController : MonoBehaviour {
                 })
                     .AttachTree(markTerritoryBehaviorBlockSequenceContainer)
                 .FinishNode()
-                .BeginCondition("Am I female", () => {
+                .BeginCondition("Are there enough wolves", () => {
+                    if (m_wolf.currentGroup.GetSize() > 4) return false;
                     return true;
                 })
                     .AttachTree(createPups_SequenceContainer)
@@ -247,7 +248,9 @@ public class WolfAIController : MonoBehaviour {
                         bool withMate = false;
                         GameObject m_Mate = null;
                         foreach (var obj in m_detectionModule.DetectedGameObjects) {
-                            if (!inCave && obj.gameObject.tag == "RestArea") inCave = true;
+                            if (!inCave && obj.gameObject.tag == "RestArea") {
+                                inCave = true;
+                            }
                             if (!withMate && obj.gameObject.tag == "Wolf" &&
                                 obj.GetComponent<Wolf>().packRole == WolfPackRole.Alpha) {
                                 withMate = true;
@@ -277,34 +280,74 @@ public class WolfAIController : MonoBehaviour {
         #region FindMate
         //before that check if wolf is not in a pack
         BaseRoutine findMate_SequenceContainer = treeBuilder
-            .BeginSequence("CreateWolfpack")
-                .BeginSelector("What is my gender")
-                    .BeginCondition("Am I male", () => {
-                        if (m_wolf.gender == AnimalGender.Male) {
-                            m_currentTarget = WolfPackManager.Instance.targetDict[m_wolf];
-                            m_status = "Finding mate";
-                            return true;
-                        }
-                        return false;
-                    })
-                        .AttachTree(moveToTarget_SequenceContainer)
-                    .FinishNode()
-                    .BeginCondition("Am I female", () => {
-                        return true;
-                    })
-                        .AttachTree(wanderBehavioir_SequenceContainer)
+            .BeginSelector("CreateWolfpack")
+                .BeginCondition("Is it stage 0", () => WolfPackManager.Instance.mateStage == 0)
+                    .BeginSelector("What is my gender")
+                        .BeginCondition("Am I male", () => {
+                            Debug.Log("Stage 0");
+                            if (m_wolf.gender == AnimalGender.Male) {
+                                m_currentTarget = WolfPackManager.Instance.targetDict[m_wolf];
+                                m_status = "Finding mate";
+                                return true;
+                            }
+                            return false;
+                        })
+                            .BeginSequence("Find female")
+                                .AttachTree(moveToTarget_SequenceContainer)
+                                .AddAction("increment stage", () => {
+                                    WolfPackManager.Instance.mateStage++;
+                                    return RoutineState.Succeded;
+                                })
+                            .FinishNode()
+                        .FinishNode()
+                        .BeginCondition("Am I female", () => true)
+                            .AttachTree(wanderBehavioir_SequenceContainer)
+                        .FinishNode()
                     .FinishNode()
                 .FinishNode()
-                .AddAction("Register Pack", () => {
-                    WolfPackManager.Instance.RegisterPack();
-                    return RoutineState.Succeded;
+                .BeginCondition("Is it stage 1", () => WolfPackManager.Instance.mateStage == 1)
+                    .AddAction("Register Pack", () => {
+                        Debug.Log("Stage 1");
+                        WolfPackManager.Instance.RegisterPack();
+                        WolfPackManager.Instance.mateStage++;
+                        return RoutineState.Succeded;
+                    })
+                .FinishNode()
+                .BeginCondition("Is it stage 2", () => {
+                    if (WolfPackManager.Instance.mateStage == 2) {
+                        Debug.Log("Stage 2");
+                        return true;
+                    }
+                    return false;
                 })
-                .AddAction("Find safe place", () => {
-                    m_currentTarget = WolfPackManager.Instance.targetDict[m_wolf];
-                    return RoutineState.Succeded;
+                    .BeginSequence("Find cave")
+                        .AddAction("", () => {
+                            m_currentTarget = WolfPackManager.Instance.targetDict[m_wolf];
+                            return RoutineState.Succeded;
+                        })
+                        .AttachTree(moveToTarget_SequenceContainer)
+                        .AddAction("increment stage", () => {
+                            WolfPackManager.Instance.mateStage++;
+                            return RoutineState.Succeded;
+                        })
+                    .FinishNode()
+                .FinishNode()
+                .BeginCondition("Is it stage 3", () => {
+                    if (WolfPackManager.Instance.mateStage == 3) {
+                        Debug.Log("Stage 3");
+                        return true;
+                        }
+                        return false;
                 })
-                .AttachTree(moveToTarget_SequenceContainer)
-                .AttachTree(mate_SequenceContainer)
+                    .BeginSequence("Mark territory while children are born")
+                        .AttachTree(mate_SequenceContainer)
+                        .AddAction("increment stage", () => {
+                            Debug.Log("Stage 4");
+                            WolfPackManager.Instance.mateStage++;
+                            return RoutineState.Succeded;
+                        })
+                    .FinishNode()
+                .FinishNode()
             .FinishNode();
         #endregion
 
@@ -444,17 +487,18 @@ public class WolfAIController : MonoBehaviour {
 
         #region MainTree
         //return final behavior tree by adding pack and non-pack behaviors
-        treeBuilder
+
+        BaseRoutine btTree = treeBuilder
             .BeginRepeater("Repeater", 0)
-            .BeginCondition("Am I in a pack", () => {
-                if (m_wolf.currentGroup == null || m_wolf.currentGroup.GetSize() < 3) {
-                    Debug.Log("Grouping");
-                    return true;
-                }
-                return false;
-            })
-                .AttachTree(findMate_SequenceContainer)
-            .FinishNode()
+                .BeginCondition("Am I mating", () => {
+                    if (WolfPackManager.Instance.mateStage < 4) {
+                        return true;
+                    }
+                    return false;
+                })
+                .AttachTree(mate_SequenceContainer)
+                    //.AttachTree(findMate_SequenceContainer)
+                .FinishNode()
             .FinishNode()
             //.AttachTree(chaseAttackBehaviorBlock_SequenceContainer)
             //.BeginSelector("A")
@@ -487,7 +531,32 @@ public class WolfAIController : MonoBehaviour {
             .FinishNode()
             */
             ;
-#endregion
+        #endregion
+
+        #region WaitTree
+
+        //the actual tree
+        treeBuilder
+            .BeginRepeater("Tree repeater", 0)
+                .BeginSelector("To do or not to do")
+                    .BeginCondition("Do I have to wait", () => (m_wolf.WaitTime > 0.001f))
+                            .AddAction("Reduce wait time", () => {
+                                m_status = "Waiting";
+                                m_wolf.WaitTime -= BEHAVIOR_TREE_UPDATE_RATE;
+                                if (m_wolf.WaitTime <= 0) {
+                                    m_wolf.WaitTime = 0;
+                                    return RoutineState.Failed;
+                                }
+                                return RoutineState.Succeded;
+                            })
+                    .FinishNode()
+                    .BeginCondition("Dont wait", () => true)
+                        .AttachTree(btTree)
+                    .FinishNode()
+                .FinishNode()
+            .FinishNode();
+
+        #endregion
 
         return treeBuilder;
     }

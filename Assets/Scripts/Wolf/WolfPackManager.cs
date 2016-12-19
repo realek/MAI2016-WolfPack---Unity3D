@@ -14,6 +14,10 @@ public class WolfPackManager : Singleton<WolfPackManager> {
     public List<GameObject> packList;
     [HideInInspector]
     public Dictionary<Wolf, GameObject> targetDict = new Dictionary<Wolf, GameObject>(); //wolf->target
+    [HideInInspector]
+    public int mateStage = 0;
+
+    private bool registered = false;
 
     // Use this for initialization
     void Awake () {
@@ -22,9 +26,12 @@ public class WolfPackManager : Singleton<WolfPackManager> {
     }
 
     public void RegisterPack() {
-        AnimalGroupManager.Instance.RegisterWolfPack(initMWolf.GetComponent<Wolf>(), initFWolf.GetComponent<Wolf>());
-        targetDict[initMWolf.GetComponent<Wolf>()] = restArea;
-        targetDict[initFWolf.GetComponent<Wolf>()] = initMWolf;
+        if (!registered) {
+            AnimalGroupManager.Instance.RegisterWolfPack(initMWolf.GetComponent<Wolf>(), initFWolf.GetComponent<Wolf>());
+            targetDict[initMWolf.GetComponent<Wolf>()] = restArea;
+            targetDict[initFWolf.GetComponent<Wolf>()] = restArea;
+            registered = true;
+        }
     }
 
     public void SpawnWolves(int numb) {
