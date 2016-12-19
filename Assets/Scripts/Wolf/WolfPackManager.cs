@@ -7,7 +7,12 @@ public class WolfPackManager : Singleton<WolfPackManager> {
     public GameObject initMWolf;
     public GameObject initFWolf;
     public GameObject restArea;
+
+    public GameObject[] patrolPoints;
+
+    [HideInInspector]
     public List<GameObject> packList;
+    [HideInInspector]
     public Dictionary<Wolf, GameObject> targetDict = new Dictionary<Wolf, GameObject>(); //wolf->target
 
     // Use this for initialization

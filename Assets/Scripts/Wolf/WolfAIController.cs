@@ -25,7 +25,6 @@ public class WolfAIController : MonoBehaviour {
     public bool hasPack;
     private BaseRoutine m_behaviorTree;
     private Wolf m_wolf;
-    public GameObject[] patrolPoints;
     private int currentPatrolPointIDX = -1;
     private GameObject m_currentTarget;
     private GameObject m_wanderPoint;
@@ -138,22 +137,26 @@ public class WolfAIController : MonoBehaviour {
             .FinishNode();
         #endregion
 
-#region Patrol
-        //Patrol behavior
-        BaseRoutine patrolBehaviorBlock_SequenceContainer = treeBuilder
-            .BeginSequence("Patrol Sequence")
+        #region MarkTerritory
+        //MarkTerritory behavior
+        BaseRoutine markTerritoryBehaviorBlockSequenceContainer = treeBuilder
+            .BeginSequence("MarkTerritory Sequence")
             .AddAction("Select Waypoint", () =>
             {
                 if (currentPatrolPointIDX == -1)
                     return RoutineState.Failed;
-                m_currentTarget = patrolPoints[currentPatrolPointIDX];
+                m_currentTarget = WolfPackManager.Instance.patrolPoints[currentPatrolPointIDX];
                 return RoutineState.Succeded;
             })
             .AttachTree(moveToTarget_SequenceContainer)
+            .AddAction("Mark Waypoint", () => {
+                WolfPackManager.Instance.patrolPoints[currentPatrolPointIDX].GetComponent<ParticleSystem>().Play();
+                return RoutineState.Succeded;
+            })
             .AddAction("Next Waypoint", () =>
              {
                  currentPatrolPointIDX++;
-                 if (currentPatrolPointIDX == patrolPoints.Length)
+                 if (currentPatrolPointIDX == WolfPackManager.Instance.patrolPoints.Length)
                  {
                      currentPatrolPointIDX = -1;
                      m_onPatrol = false;
@@ -199,26 +202,40 @@ public class WolfAIController : MonoBehaviour {
             .FinishNode();
         #endregion
 
-        #region FindMate
-        //before that check if wolf is not in a pack
-        BaseRoutine findMate_SequenceContainer = treeBuilder
-            .BeginSequence("CreateWolfpack")
-                .BeginSelector("What is my gender")
-                    .BeginCondition("Am I male", () => {
-                        if (m_wolf.gender == AnimalGender.Male) {
-                            m_currentTarget = WolfPackManager.Instance.targetDict[m_wolf];
-                            return true;
-                        }
-                        return false;
-                    })
-                        .AttachTree(moveToTarget_SequenceContainer)
-                        
-                    .FinishNode()
-                .FinishNode()
+        #region CreatePups
 
-
-
+        BaseRoutine createPups_SequenceContainer = treeBuilder
+            .BeginSequence("Make pups")
+                .AddAction("Wait for pregnancy period", () => {
+                    m_wolf.WaitTime = 10f;
+                    return RoutineState.Succeded;
+                })
+                .AddAction("Spawn pups", () => {
+                    WolfPackManager.Instance.SpawnWolves(Random.Range(3, 6));
+                    return RoutineState.Succeded;
+                })
             .FinishNode();
+        #endregion
+
+        #region Pregnancy
+
+        BaseRoutine pregnancy_SequenceContainer = treeBuilder
+            .BeginSelector("ToDo before children are born")
+                .BeginCondition("Am I male", () => {
+                    if (m_wolf.gender == AnimalGender.Male) {
+                        return true;
+                    }
+                    return false;
+                })
+                    .AttachTree(markTerritoryBehaviorBlockSequenceContainer)
+                .FinishNode()
+                .BeginCondition("Am I female", () => {
+                    return true;
+                })
+                    .AttachTree(createPups_SequenceContainer)
+                .FinishNode()
+            .FinishNode();
+
         #endregion
 
         #region Mate
@@ -253,10 +270,43 @@ public class WolfAIController : MonoBehaviour {
                         })
                     .FinishNode()
                 .FinishNode()
-            .FinishNode()
-            ;
+                .AttachTree(pregnancy_SequenceContainer)
+            .FinishNode();
+        #endregion
 
-#endregion
+        #region FindMate
+        //before that check if wolf is not in a pack
+        BaseRoutine findMate_SequenceContainer = treeBuilder
+            .BeginSequence("CreateWolfpack")
+                .BeginSelector("What is my gender")
+                    .BeginCondition("Am I male", () => {
+                        if (m_wolf.gender == AnimalGender.Male) {
+                            m_currentTarget = WolfPackManager.Instance.targetDict[m_wolf];
+                            m_status = "Finding mate";
+                            return true;
+                        }
+                        return false;
+                    })
+                        .AttachTree(moveToTarget_SequenceContainer)
+                    .FinishNode()
+                    .BeginCondition("Am I female", () => {
+                        return true;
+                    })
+                        .AttachTree(wanderBehavioir_SequenceContainer)
+                    .FinishNode()
+                .FinishNode()
+                .AddAction("Register Pack", () => {
+                    WolfPackManager.Instance.RegisterPack();
+                    return RoutineState.Succeded;
+                })
+                .AddAction("Find safe place", () => {
+                    m_currentTarget = WolfPackManager.Instance.targetDict[m_wolf];
+                    return RoutineState.Succeded;
+                })
+                .AttachTree(moveToTarget_SequenceContainer)
+                .AttachTree(mate_SequenceContainer)
+            .FinishNode();
+        #endregion
 
         #region Chase
         //Get target and move to behavior
@@ -298,7 +348,7 @@ public class WolfAIController : MonoBehaviour {
                 }
                 return false;
             })
-            .AttachTree(patrolBehaviorBlock_SequenceContainer)
+            .AttachTree(markTerritoryBehaviorBlockSequenceContainer)
             .FinishNode()
             .BeginCondition("Start Wander", () => 
             {
@@ -396,7 +446,17 @@ public class WolfAIController : MonoBehaviour {
         //return final behavior tree by adding pack and non-pack behaviors
         treeBuilder
             .BeginRepeater("Repeater", 0)
-            .AttachTree(chaseAttackBehaviorBlock_SequenceContainer)
+            .BeginCondition("Am I in a pack", () => {
+                if (m_wolf.currentGroup == null || m_wolf.currentGroup.GetSize() < 3) {
+                    Debug.Log("Grouping");
+                    return true;
+                }
+                return false;
+            })
+                .AttachTree(findMate_SequenceContainer)
+            .FinishNode()
+            .FinishNode()
+            //.AttachTree(chaseAttackBehaviorBlock_SequenceContainer)
             //.BeginSelector("A")
             //    .BeginCondition("B", () =>
             //    {
@@ -407,7 +467,7 @@ public class WolfAIController : MonoBehaviour {
             //    //.AttachTree(findMate_SequenceContainer)
             //    .FinishNode()
             //.FinishNode()
-            .FinishNode();
+            //.FinishNode();
             /*
             .BeginRepeater("Tree repeater", 0)
             .BeginSelector("Initial State Selector")
