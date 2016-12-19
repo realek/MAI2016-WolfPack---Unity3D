@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class WolfPackManager : Singleton<WolfPackManager> {
 
@@ -35,10 +36,15 @@ public class WolfPackManager : Singleton<WolfPackManager> {
     }
 
     public void SpawnWolves(int numb) {
+        GameObject wolf = (GameObject)Resources.Load("Wolf");
         for (int i = 0; i < numb; i++) {
-            GameObject pup = (GameObject) Instantiate((Resources.Load("Wolf")));
-            pup.transform.position = restArea.transform.position +
-                                     new Vector3(Random.Range(0, 10), 0f, Random.Range(0, 10));
+            GameObject pup = Instantiate(wolf);
+            NavMeshHit hit;
+            NavMesh.SamplePosition(restArea.transform.position +
+                                     new Vector3(Random.Range(1, 3), 0f, Random.Range(0, 10)), out hit, 3, -1);
+
+            // pup.transform.position = hit.position;
+            pup.GetComponent<NavMeshAgent>().Warp(hit.position);
             pup.GetComponent<Wolf>().SetGroup(initMWolf.GetComponent<Wolf>().currentGroup);
         }
     }
