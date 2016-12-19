@@ -10,6 +10,7 @@ using UnityEngine.UI;
 public class WolfAIController : MonoBehaviour {
 
 
+    private List<GameObject> m_consumables;
     private string m_status;
     public string status
     {
@@ -93,7 +94,11 @@ public class WolfAIController : MonoBehaviour {
             {
                 if (m_wolf.needs.IsNeedTriggered(NeedType.Hunger))
                 {
-                    m_currentTarget = sleepArea;
+                    var food = m_consumables.Where(c => c.tag == "Food").ToList();
+                    food.Sort((GameObject ob1, GameObject ob2) => 
+                    (ob1.transform.position - transform.position).sqrMagnitude
+                    .CompareTo((ob2.transform.position - transform.position).sqrMagnitude));
+                    m_currentTarget = food[0];
                     return true;
                 }
                 else return false;
@@ -115,7 +120,11 @@ public class WolfAIController : MonoBehaviour {
             {
                 if (m_wolf.needs.IsNeedTriggered(NeedType.Thirst))
                 {
-                    m_currentTarget = sleepArea;
+                    var drink = m_consumables.Where(c => c.tag == "Water").ToList();
+                    drink.Sort((GameObject ob1, GameObject ob2) =>
+                    (ob1.transform.position - transform.position).sqrMagnitude
+                    .CompareTo((ob2.transform.position - transform.position).sqrMagnitude));
+                    m_currentTarget = drink[0];
                     return true;
                 }
                 else return false;
@@ -363,6 +372,28 @@ public class WolfAIController : MonoBehaviour {
             .FinishNode();
         #endregion
 
+        #region Detect Resources
+        BaseRoutine detectResources_SequenceContainer = treeBuilder
+            .BeginSequence("ResourceDetection")
+            .AddAction("Detect", () =>
+            {
+
+                if (m_detectionModule.DetectedGameObjects != null)
+                {
+                    var found = m_detectionModule.DetectedGameObjects.Where(consumable => consumable.tag == "Food" || consumable.tag == "Water").ToList();
+                    if (found.Count > 0)
+                        foreach (Collider c in found)
+                            if (!m_consumables.Contains(c.gameObject))
+                                m_consumables.Add(c.gameObject);
+                }
+
+                return RoutineState.Succeded;
+            })
+            .FinishNode();
+        #endregion
+
+
+
         #region Alpha behavior
         //Alpha behavior container
         BaseRoutine alphaBehaviorBlock_SelectorContainer = treeBuilder
@@ -565,10 +596,12 @@ public class WolfAIController : MonoBehaviour {
         //return final behavior tree by adding pack and non-pack behaviors
 
         BaseRoutine btTree = treeBuilder
-            .BeginRepeater("Repeater", 0)
-                .BeginSelector("A")
+            .BeginSequence("Wolf behavior")
+            .AttachTree(detectResources_SequenceContainer)
+            .BeginSelector("A")
                     .BeginCondition("Am I mating", () => {
-                        if (m_wolf.packRole == WolfPackRole.Alpha && WolfPackManager.Instance.mateStage < 5) {
+                        if (m_wolf.packRole == WolfPackRole.Alpha && WolfPackManager.Instance.mateStage < 5)
+                        {
                             return true;
                         }
                         return false;
@@ -578,14 +611,15 @@ public class WolfAIController : MonoBehaviour {
                     .BeginCondition("Detect prey", () => true)
                     .AttachTree(chaseAttackBehaviorBlock_SequenceContainer)
                     .FinishNode()
-                    .BeginCondition("Am I Alpha Male?", () => m_wolf.packRole == WolfPackRole.Alpha && m_wolf.currentGroup!=null)
+                    .BeginCondition("Am I Alpha Male?", () => m_wolf.packRole == WolfPackRole.Alpha && m_wolf.currentGroup != null)
                     .AttachTree(alphaBehaviorBlock_SelectorContainer)
                     .FinishNode()
-                    .BeginCondition("Do I have a pack?",()=> m_wolf.currentGroup !=null)
+                    .BeginCondition("Do I have a pack?", () => m_wolf.currentGroup != null)
                     .AttachTree(followPackLeader_SequenceContainer)
                     .FinishNode()
                 .FinishNode()
-            .FinishNode()
+            .FinishNode();
+
             //.AttachTree(chaseAttackBehaviorBlock_SequenceContainer)
             //.BeginSelector("A")
             //    .BeginCondition("B", () =>
@@ -626,10 +660,12 @@ public class WolfAIController : MonoBehaviour {
             .BeginRepeater("Tree repeater", 0)
                 .BeginSelector("To do or not to do")
                     .BeginCondition("Do I have to wait", () => (m_wolf.WaitTime > 0.001f))
-                            .AddAction("Reduce wait time", () => {
+                            .AddAction("Reduce wait time", () =>
+                            {
                                 m_status = "Waiting";
                                 m_wolf.WaitTime -= BEHAVIOR_TREE_UPDATE_RATE;
-                                if (m_wolf.WaitTime <= 0) {
+                                if (m_wolf.WaitTime <= 0)
+                                {
                                     m_wolf.WaitTime = 0;
                                     return RoutineState.Failed;
                                 }
@@ -653,6 +689,7 @@ public class WolfAIController : MonoBehaviour {
     // Use this for initialization
     private void Start () {
 
+        m_consumables = new List<GameObject>();
         m_wanderPoint = new GameObject("Wander point for "+gameObject.name+" id: "+gameObject.GetInstanceID());
         m_behaviorTreeTick = new WaitForSeconds(BEHAVIOR_TREE_UPDATE_RATE);
         m_currentTarget = gameObject;
