@@ -64,19 +64,6 @@ public class WolfAIController : MonoBehaviour {
         .FinishNode();
         #endregion
 
-        ///Move with pack
-        BaseRoutine followPackLeader_SequenceContainer = treeBuilder
-            .BeginSequence("Follow pack")
-            .AddAction("set current Target", () =>
-             {
-                 if (m_wolf.packRole == WolfPackRole.Alpha)
-                     return RoutineState.Failed;
-                 else
-                     m_currentTarget = m_wolf.currentGroup.GetMemberBeforeMe(m_wolf).gameObject;
-                 return RoutineState.Succeded;
-             })
-             .AttachTree(moveToTarget_SequenceContainer)
-            .FinishNode();
 #region basicNeeds
         //Needs behavior container
         BaseRoutine needsBlock_SelectorContainer = treeBuilder
@@ -376,10 +363,10 @@ public class WolfAIController : MonoBehaviour {
             .FinishNode();
         #endregion
 
-        #region Solo
-        //Solo behavior container
-        BaseRoutine soloBehaviorBlock_SelectorContainer = treeBuilder
-            .BeginSelector("Solo behavior")
+        #region Alpha behavior
+        //Alpha behavior container
+        BaseRoutine alphaBehaviorBlock_SelectorContainer = treeBuilder
+            .BeginSelector("Alpha behavior")
             .BeginCondition("Has Needs", () => { return m_wolf.needs.InNeed(); })
             .AttachTree(needsBlock_SelectorContainer)
             .FinishNode()
@@ -413,19 +400,51 @@ public class WolfAIController : MonoBehaviour {
             .FinishNode();
         #endregion
 
-#region PackBehavior
-        //Pack behavior container
-        BaseRoutine packBehaviorBlock_SequenceContainer = treeBuilder
-            .BeginSequence("move with pack")
-            .AddAction("Pack movement", () =>
-             {
-                // Debug.Log("Called pack movement");
-                 return RoutineState.Succeded;
-             })
-             .FinishNode();
+        #region NonAlphaBehavior
+        BaseRoutine nonAlphaBehaviorBlock_SelectorContainer = treeBuilder
+    .BeginSelector("NonAlpha behavior")
+    .BeginCondition("Has Needs", () => { return m_wolf.needs.InNeed(); })
+    .AttachTree(needsBlock_SelectorContainer)
+    .FinishNode()
+    .BeginCondition("Start Wander", () =>
+    {
+        if (m_wandering)
+            return true;
+        float rnd = Random.value;
+        if (rnd <= WANDER_CHANCE + PATROL_CHANCE && rnd > PATROL_CHANCE)
+            return true;
+        return false;
+    })
+    .AttachTree(wanderBehavioir_SequenceContainer)
+    .FinishNode()
+    .FinishNode();
         #endregion
 
-#region Attack
+        #region PackBehavior
+        //Pack behavior container
+        ///Move with pack
+        BaseRoutine followPackLeader_SequenceContainer = treeBuilder
+            .BeginSelector("Wander/FollowPack")
+            .BeginCondition("Should I follow?", () => Random.Range(0, 2) == 1)
+            .AttachTree(nonAlphaBehaviorBlock_SelectorContainer)
+            .FinishNode()
+            .BeginCondition("I am following", () => true)
+            .BeginSequence("Follow pack")
+            .AddAction("set current Target", () =>
+            {
+                if (m_wolf.packRole == WolfPackRole.Alpha)
+                    return RoutineState.Failed;
+                else
+                    m_currentTarget = m_wolf.currentGroup.GetMemberBeforeMe(m_wolf).gameObject;
+                return RoutineState.Succeded;
+            })
+             .AttachTree(moveToTarget_SequenceContainer)
+             .FinishNode()
+             .FinishNode()
+            .FinishNode();
+        #endregion
+
+        #region Attack
         //***************************************************************
         //ATTACK STUFF
 
@@ -544,6 +563,9 @@ public class WolfAIController : MonoBehaviour {
                         return false;
                     })
                         .AttachTree(findMate_SequenceContainer)
+                    .FinishNode()
+                    .BeginCondition("Am I Alpha Male?", () => m_wolf.packRole == WolfPackRole.Alpha && m_wolf.currentGroup!=null)
+                    .AttachTree(alphaBehaviorBlock_SelectorContainer)
                     .FinishNode()
                     .BeginCondition("Do I have a pack?",()=> m_wolf.currentGroup !=null)
                     .AttachTree(followPackLeader_SequenceContainer)
