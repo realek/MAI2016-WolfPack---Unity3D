@@ -56,7 +56,8 @@ public class AnimalGroup {
         int idx = m_members.IndexOf(self) - 1;
         if (idx < 0)
             return null;
-
+        if (idx == 1) // 1 is the female alpha
+            return m_members[0];
         return m_members[m_members.IndexOf(self) - 1];
     }
 
