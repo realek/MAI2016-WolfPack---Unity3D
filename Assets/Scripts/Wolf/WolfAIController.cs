@@ -241,39 +241,29 @@ public class WolfAIController : MonoBehaviour {
 
         #region Mate
         BaseRoutine mate_SequenceContainer = treeBuilder
-            .BeginSequence("Mating season")
+            .BeginSelector("Check")
                 .BeginCondition("Is male with female alpha", () => {
                     if (m_wolf.packRole == WolfPackRole.Alpha) {
-                        bool inCave = false;
                         bool withMate = false;
-                        GameObject m_Mate = null;
                         foreach (var obj in m_detectionModule.DetectedGameObjects) {
-                            if (!inCave && obj.gameObject.tag == "RestArea") {
-                                inCave = true;
-                            }
                             if (!withMate && obj.gameObject.tag == "Wolf" &&
                                 obj.GetComponent<Wolf>().packRole == WolfPackRole.Alpha) {
                                 withMate = true;
-                                m_Mate = obj.gameObject;
                             }
                         }
-                        if (inCave && withMate) {
-                            m_currentTarget = m_Mate;
+                        if (withMate) {
                             return true;
                         }
                     }
                     return false;
                 })
-                    .BeginSequence("Go and mate")
-                        .AttachTree(moveToTarget_SequenceContainer)
                         .AddAction("Copulate", () => {
                             m_status = "Multiplying";
                             m_wolf.WaitTime = 2f;
+                            currentPatrolPointIDX = 0;
                             return RoutineState.Succeded;
                         })
-                    .FinishNode()
                 .FinishNode()
-                .AttachTree(pregnancy_SequenceContainer)
             .FinishNode();
         #endregion
 
@@ -284,7 +274,6 @@ public class WolfAIController : MonoBehaviour {
                 .BeginCondition("Is it stage 0", () => WolfPackManager.Instance.mateStage == 0)
                     .BeginSelector("What is my gender")
                         .BeginCondition("Am I male", () => {
-                            Debug.Log("Stage 0");
                             if (m_wolf.gender == AnimalGender.Male) {
                                 m_currentTarget = WolfPackManager.Instance.targetDict[m_wolf];
                                 m_status = "Finding mate";
@@ -307,7 +296,6 @@ public class WolfAIController : MonoBehaviour {
                 .FinishNode()
                 .BeginCondition("Is it stage 1", () => WolfPackManager.Instance.mateStage == 1)
                     .AddAction("Register Pack", () => {
-                        Debug.Log("Stage 1");
                         WolfPackManager.Instance.RegisterPack();
                         WolfPackManager.Instance.mateStage++;
                         return RoutineState.Succeded;
@@ -315,7 +303,6 @@ public class WolfAIController : MonoBehaviour {
                 .FinishNode()
                 .BeginCondition("Is it stage 2", () => {
                     if (WolfPackManager.Instance.mateStage == 2) {
-                        Debug.Log("Stage 2");
                         return true;
                     }
                     return false;
@@ -334,7 +321,6 @@ public class WolfAIController : MonoBehaviour {
                 .FinishNode()
                 .BeginCondition("Is it stage 3", () => {
                     if (WolfPackManager.Instance.mateStage == 3) {
-                        Debug.Log("Stage 3");
                         return true;
                         }
                         return false;
@@ -342,11 +328,18 @@ public class WolfAIController : MonoBehaviour {
                     .BeginSequence("Mark territory while children are born")
                         .AttachTree(mate_SequenceContainer)
                         .AddAction("increment stage", () => {
-                            Debug.Log("Stage 4");
                             WolfPackManager.Instance.mateStage++;
                             return RoutineState.Succeded;
                         })
                     .FinishNode()
+                .FinishNode()
+                .BeginCondition("Is it stage 4", () => {
+                    if (WolfPackManager.Instance.mateStage == 4) {
+                        return true;
+                    }
+                    return false;
+                })
+                    .AttachTree(pregnancy_SequenceContainer)
                 .FinishNode()
             .FinishNode();
         #endregion
@@ -490,14 +483,15 @@ public class WolfAIController : MonoBehaviour {
 
         BaseRoutine btTree = treeBuilder
             .BeginRepeater("Repeater", 0)
-                .BeginCondition("Am I mating", () => {
-                    if (WolfPackManager.Instance.mateStage < 4) {
-                        return true;
-                    }
-                    return false;
-                })
-                .AttachTree(mate_SequenceContainer)
-                    //.AttachTree(findMate_SequenceContainer)
+                .BeginSelector("A")
+                    .BeginCondition("Am I mating", () => {
+                        if (m_wolf.packRole == WolfPackRole.Alpha && WolfPackManager.Instance.mateStage < 5) {
+                            return true;
+                        }
+                        return false;
+                    })
+                        .AttachTree(findMate_SequenceContainer)
+                    .FinishNode()
                 .FinishNode()
             .FinishNode()
             //.AttachTree(chaseAttackBehaviorBlock_SequenceContainer)
