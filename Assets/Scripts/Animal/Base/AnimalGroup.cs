@@ -63,7 +63,7 @@ public class AnimalGroup {
         float z = 0;
         for(int i = 0; i < m_members.Count; i ++)
         {
-            if(m_members[i] != self)
+            if(m_members[i] !=null && m_members[i] != self)
             {
                 x += m_members[i].transform.position.x;
                 y += m_members[i].transform.position.y;

@@ -264,8 +264,10 @@ public class Elk : NonWolf {
         BaseRoutine btTree = treeBuilder
             .BeginSelector("What to do")
                 .BeginCondition("Are wolves nearby", () => {
+                    if(m_detectionModule!=null && m_detectionModule.DetectedGameObjects !=null)
                     foreach (Collider t in m_detectionModule.DetectedGameObjects) {
-                        if (t.GetComponent<Wolf>()) return true;
+                        if (t!=null && t.GetComponent<Wolf>())
+                            return true;
                     }
                     return false;
                 })
@@ -328,6 +330,8 @@ public class Elk : NonWolf {
 
     private void OnDestroy()
     {
+        if(m_group!=null)
+            m_group.RemoveMember(this);
         Destroy(m_wanderPoint);
     }
 }
