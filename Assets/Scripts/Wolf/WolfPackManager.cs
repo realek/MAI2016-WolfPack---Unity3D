@@ -18,6 +18,8 @@ public class WolfPackManager : Singleton<WolfPackManager> {
 
     public void RegisterPack() {
         AnimalGroupManager.Instance.RegisterWolfPack(initMWolf.GetComponent<Wolf>(), initFWolf.GetComponent<Wolf>());
+        targetDict[initMWolf.GetComponent<Wolf>()] = restArea;
+        targetDict[initFWolf.GetComponent<Wolf>()] = initMWolf;
     }
 
     public void SpawnWolves(int numb) {

@@ -199,50 +199,64 @@ public class WolfAIController : MonoBehaviour {
             .FinishNode();
         #endregion
 
-
-        #region DedicatedWander
-        //wander behavior
-        BaseRoutine dedicatedWander_SequenceContainer = treeBuilder
-            .BeginSequence("Wander Sequence")
-            .AddAction("Select Random Point On Navmesh", () => {
-                if (!m_wandering) {
-                    m_wandering = true;
-                    NavMeshHit hit;
-                    Vector3 source = transform.position + (Random.insideUnitSphere * m_detectionModule.DetectionAreaRadius);
-                    Vector3 halfDistToTarget = (transform.position - WolfPackManager.Instance.targetDict[m_wolf].transform.position)/2;
-                    if (NavMesh.SamplePosition(source, out hit, m_detectionModule.DetectionAreaRadius, -1)) {
-                        m_wanderPoint.transform.position = hit.position + halfDistToTarget;
-                        m_currentTarget = m_wanderPoint;
-                    } else {
-                        Debug.Log("Failed to get a dedicated random point on navmesh with source at" + source + "hit at: " + hit.position);
-                        return RoutineState.Failed;
-                    }
-                }
-                return RoutineState.Succeded;
-            })
-            .AttachTree(moveToTarget_SequenceContainer)
-            .AddAction("EndWander", () => {
-                m_currentTarget = null;
-                m_wandering = false;
-                return RoutineState.Succeded;
-            })
-            .FinishNode();
-        #endregion
-
         #region FindMate
         //before that check if wolf is not in a pack
         BaseRoutine findMate_SequenceContainer = treeBuilder
-            .BeginSelector("What is my gender")
-                .BeginCondition("Am I male", () => {
-                    if (m_wolf.gender == AnimalGender.Male) return true;
-                    return false;
-                })
-                    .BeginRepeater("go to female in 4 steps", 4)
-                        .AttachTree(dedicatedWander_SequenceContainer)
+            .BeginSequence("CreateWolfpack")
+                .BeginSelector("What is my gender")
+                    .BeginCondition("Am I male", () => {
+                        if (m_wolf.gender == AnimalGender.Male) {
+                            m_currentTarget = WolfPackManager.Instance.targetDict[m_wolf];
+                            return true;
+                        }
+                        return false;
+                    })
+                        .AttachTree(moveToTarget_SequenceContainer)
+                        
                     .FinishNode()
                 .FinishNode()
+
+
+
             .FinishNode();
         #endregion
+
+        #region Mate
+        BaseRoutine mate_SequenceContainer = treeBuilder
+            .BeginSequence("Mating season")
+                .BeginCondition("Is male with female alpha", () => {
+                    if (m_wolf.packRole == WolfPackRole.Alpha) {
+                        bool inCave = false;
+                        bool withMate = false;
+                        GameObject m_Mate = null;
+                        foreach (var obj in m_detectionModule.DetectedGameObjects) {
+                            if (!inCave && obj.gameObject.tag == "RestArea") inCave = true;
+                            if (!withMate && obj.gameObject.tag == "Wolf" &&
+                                obj.GetComponent<Wolf>().packRole == WolfPackRole.Alpha) {
+                                withMate = true;
+                                m_Mate = obj.gameObject;
+                            }
+                        }
+                        if (inCave && withMate) {
+                            m_currentTarget = m_Mate;
+                            return true;
+                        }
+                    }
+                    return false;
+                })
+                    .BeginSequence("Go and mate")
+                        .AttachTree(moveToTarget_SequenceContainer)
+                        .AddAction("Copulate", () => {
+                            m_status = "Multiplying";
+                            m_wolf.WaitTime = 2f;
+                            return RoutineState.Succeded;
+                        })
+                    .FinishNode()
+                .FinishNode()
+            .FinishNode()
+            ;
+
+#endregion
 
         #region Chase
         //Get target and move to behavior
