@@ -4,10 +4,10 @@ using System.Collections;
 public class UnityGameViewCamera : MonoBehaviour
 {
 
-    float m_mainSpeed = 100.0f; //default speed
-    float m_shiftAdd = 250.0f; //shift speed factor multiplied by time shift is held down
-    float m_maxShift = 1000.0f; // max speed while using shift
-    float m_camSens = 0.25f; // mouse sensitivity
+    float m_mainSpeed = 50.0f; //default speed
+    float m_shiftAdd = 150.0f; //shift speed factor multiplied by time shift is held down
+    float m_maxShift = 500.0f; // max speed while using shift
+    float m_camSens = 0.2f; // mouse sensitivity
     private Vector3 lastMouse;
     private float totalRun = 1.0f;
 
