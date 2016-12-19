@@ -364,6 +364,14 @@ public class WolfAIController : MonoBehaviour {
 
         #endregion
 
+        #region Chase and Attack
+        BaseRoutine chaseAttackBehaviorBlock_SequenceContainer = treeBuilder
+            .BeginSequence("Chase and attack")
+            .AttachTree(chaseBehaviorBlock_SelectorContainer)
+            .AttachTree(attack_SequenceContainer)
+            .FinishNode();
+        #endregion
+
         #region MainTree
         //return final behavior tree by adding pack and non-pack behaviors
         treeBuilder
