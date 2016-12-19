@@ -253,6 +253,7 @@ public class WolfAIController : MonoBehaviour {
             .BeginSelector("Check")
                 .BeginCondition("Is male with female alpha", () => {
                     if (m_wolf.packRole == WolfPackRole.Alpha) {
+                        m_wolf.status = "Making puppies";
                         bool withMate = false;
                         foreach (var obj in m_detectionModule.DetectedGameObjects) {
                             if (!withMate && obj.gameObject.tag == "Wolf" &&
@@ -267,7 +268,7 @@ public class WolfAIController : MonoBehaviour {
                     return false;
                 })
                         .AddAction("Copulate", () => {
-                            m_status = "Multiplying";
+                            m_wolf.status = "Multiplying";
                             m_wolf.WaitTime = 2f;
                             currentPatrolPointIDX = 0;
                             return RoutineState.Succeded;
@@ -285,7 +286,7 @@ public class WolfAIController : MonoBehaviour {
                         .BeginCondition("Am I male", () => {
                             if (m_wolf.gender == AnimalGender.Male) {
                                 m_currentTarget = WolfPackManager.Instance.targetDict[m_wolf];
-                                m_status = "Finding mate";
+                                m_wolf.status = "Finding mate";
                                 return true;
                             }
                             return false;
@@ -319,6 +320,7 @@ public class WolfAIController : MonoBehaviour {
                     .BeginSequence("Find cave")
                         .AddAction("", () => {
                             m_currentTarget = WolfPackManager.Instance.targetDict[m_wolf];
+                            m_wolf.status = "Finding den";
                             return RoutineState.Succeded;
                         })
                         .AttachTree(moveToTarget_SequenceContainer)
@@ -516,7 +518,7 @@ public class WolfAIController : MonoBehaviour {
                 .AddAction("Cooldown", () => {
                     if (m_wolf.m_currentHealth > 30) m_wolf.WaitTime = 1;
                     else m_wolf.WaitTime = 2;
-                    m_status = "Attacking";
+                    m_wolf.status = "Attacking";
                     return RoutineState.Succeded;
                 })
             .FinishNode();
@@ -527,13 +529,13 @@ public class WolfAIController : MonoBehaviour {
             .AddAction("Find prey with lowest hp", () => {
                 int weakest = 101;
                 foreach (Collider t in m_detectionModule.DetectedGameObjects) {
-                    var m_wolf = t.GetComponent<NonWolf>();
-                    if (m_wolf && m_wolf.m_currentHealth < weakest) {
-                        weakest = m_wolf.m_currentHealth;
-                        m_currentTarget = m_wolf.gameObject;
+                    var m_prey = t.GetComponent<NonWolf>();
+                    if (m_prey && m_prey.m_currentHealth < weakest) {
+                        weakest = m_prey.m_currentHealth;
+                        m_currentTarget = m_prey.gameObject;
                     }
                 }
-                m_status = "ChoosingAtkTarget";
+                m_wolf.status = "ChoosingAtkTarget";
                 return RoutineState.Succeded;
             })
             .AttachTree(moveToTarget_SequenceContainer)
@@ -662,7 +664,7 @@ public class WolfAIController : MonoBehaviour {
                     .BeginCondition("Do I have to wait", () => (m_wolf.WaitTime > 0.001f))
                             .AddAction("Reduce wait time", () =>
                             {
-                                m_status = "Waiting";
+                                m_wolf.status = "Waiting";
                                 m_wolf.WaitTime -= BEHAVIOR_TREE_UPDATE_RATE;
                                 if (m_wolf.WaitTime <= 0)
                                 {
