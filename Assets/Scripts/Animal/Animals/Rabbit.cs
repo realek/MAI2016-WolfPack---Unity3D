@@ -5,8 +5,6 @@ using UnityEngine.UI;
 
 public class Rabbit : NonWolf {
 
-    public Text status;
-
     void Start() {
         m_strength = AnimalStrength.Weak;
         CarcassQnt = GlobalVars.RabbitCarcassQnt;
@@ -55,7 +53,7 @@ public class Rabbit : NonWolf {
                         if (NavMesh.SamplePosition(source, out hit, m_detectionModule.DetectionAreaRadius, -1)) {
                             m_wanderPoint.transform.position = hit.position;
                             m_currentTarget = m_wanderPoint;
-                            status.text = "Wandering";
+                            status = "Wandering";
                         } else {
                             Debug.Log("Failed to get random point on navmesh with source at" + source + "hit at: " + hit.position);
                             return RoutineState.Failed;
@@ -79,7 +77,7 @@ public class Rabbit : NonWolf {
                 .AddAction("Select herd location", () => {
                     m_wanderPoint.transform.position = GetGroupCenter();
                     m_currentTarget = m_wanderPoint;
-                    status.text = "GoToHerd";
+                    status = "GoToHerd";
                     return RoutineState.Succeded;
                 })
                 .AttachTree(moveToTarget_SequenceContainer)
@@ -104,7 +102,7 @@ public class Rabbit : NonWolf {
                     m_wanderPoint.transform.position = new Vector3(2 * transform.position.x - m_currentTarget.transform.position.x,
                         transform.position.y, 2 * transform.position.z - m_currentTarget.transform.position.z);
                     m_currentTarget = m_wanderPoint;
-                    status.text = "RunAwayFromWolf";
+                    status = "RunAwayFromWolf";
                     return RoutineState.Succeded;
                 })
                 .AttachTree(moveToTarget_SequenceContainer)
@@ -126,7 +124,7 @@ public class Rabbit : NonWolf {
 
                     m_wanderPoint.transform.position = new Vector3(xPos, transform.position.y, zPos);
                     m_currentTarget = m_wanderPoint;
-                    status.text = "GroupRunAway";
+                    status = "GroupRunAway";
                     return RoutineState.Succeded;
                 })
                 .AttachTree(moveToTarget_SequenceContainer)
@@ -158,7 +156,7 @@ public class Rabbit : NonWolf {
                 .AddAction("Cooldown", () => {
                     if (m_currentHealth > 30) WaitTime = 1;
                     else WaitTime = 2;
-                    status.text = "Attacking";
+                    status = "Attacking";
                     return RoutineState.Succeded;
                 })
             .FinishNode();
@@ -175,7 +173,7 @@ public class Rabbit : NonWolf {
                         m_currentTarget = m_wolf.gameObject;
                     }
                 }
-                status.text = "ChoosingAtkTarget";
+                status = "ChoosingAtkTarget";
                 return RoutineState.Succeded;
             })
             .AttachTree(moveToTarget_SequenceContainer)
@@ -187,7 +185,7 @@ public class Rabbit : NonWolf {
         BaseRoutine stayAndWait_SequenceContainer = treeBuilder
             .BeginSequence("Wait timer")
             .AddAction("Wait", () => {
-                status.text = "Waiting";
+                status = "Waiting";
                 WaitTime = 1;
                 needs.ModNeed(NeedType.Energy, GlobalVars.RestEnIncrease);
                 return RoutineState.Succeded;
@@ -269,7 +267,7 @@ public class Rabbit : NonWolf {
                 .BeginSelector("To do or not to do")
                     .BeginCondition("Do I have to wait", () => (WaitTime > 0.001f))
                             .AddAction("Reduce wait time", () => {
-                                status.text = "Waiting";
+                                status = "Waiting";
                                 WaitTime -= BEHAVIOR_TREE_UPDATE_RATE;
                                 if (WaitTime <= 0) {
                                     WaitTime = 0;
