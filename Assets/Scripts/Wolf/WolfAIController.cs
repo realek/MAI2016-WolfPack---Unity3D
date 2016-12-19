@@ -202,10 +202,11 @@ public class WolfAIController : MonoBehaviour {
                 if (!m_wandering) {
                     m_wandering = true;
                     NavMeshHit hit;
-                    Vector3 source = transform.position + (Random.insideUnitSphere * m_detectionModule.DetectionAreaRadius);
-                    Vector3 halfDistToTarget = (transform.position - WolfPackManager.Instance.targetDict[m_wolf].transform.position)/2;
+                    Vector3 source = transform.position/2 +
+                                     (new Vector3(Random.Range(-10f, 10f), 0f, Random.Range(-10f, 10f))) +
+                                     WolfPackManager.Instance.targetDict[m_wolf].transform.position/2;
                     if (NavMesh.SamplePosition(source, out hit, m_detectionModule.DetectionAreaRadius, -1)) {
-                        m_wanderPoint.transform.position = hit.position + halfDistToTarget;
+                        m_wanderPoint.transform.position = hit.position;
                         m_currentTarget = m_wanderPoint;
                     } else {
                         Debug.Log("Failed to get a dedicated random point on navmesh with source at" + source + "hit at: " + hit.position);
@@ -228,13 +229,16 @@ public class WolfAIController : MonoBehaviour {
         BaseRoutine findMate_SequenceContainer = treeBuilder
             .BeginSelector("What is my gender")
                 .BeginCondition("Am I male", () => {
-                    if (m_wolf.gender == AnimalGender.Male) return true;
+                    if (m_wolf.gender == AnimalGender.Male) {
+                        return true;
+                    }
                     return false;
                 })
                     .BeginRepeater("go to female in 4 steps", 4)
                         .AttachTree(dedicatedWander_SequenceContainer)
                     .FinishNode()
                 .FinishNode()
+
             .FinishNode();
         #endregion
 
@@ -371,11 +375,10 @@ public class WolfAIController : MonoBehaviour {
             .BeginSelector("A")
                 .BeginCondition("B", () =>
                 {
-                    m_currentTarget = sleepArea;
+                    //m_currentTarget = sleepArea;
                     return true;
                 })
-                .AttachTree(moveToTarget_SequenceContainer)
-                //.AttachTree(findMate_SequenceContainer)
+                .AttachTree(findMate_SequenceContainer)
                 .FinishNode()
             .FinishNode()
             .FinishNode();

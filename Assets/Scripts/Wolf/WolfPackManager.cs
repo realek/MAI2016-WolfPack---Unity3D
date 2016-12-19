@@ -11,7 +11,7 @@ public class WolfPackManager : Singleton<WolfPackManager> {
     public Dictionary<Wolf, GameObject> targetDict = new Dictionary<Wolf, GameObject>(); //wolf->target
 
     // Use this for initialization
-    void Start () {
+    void Awake () {
         targetDict.Add(initMWolf.GetComponent<Wolf>(), initFWolf);
         targetDict.Add(initFWolf.GetComponent<Wolf>(), null);
     }
